@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}ورود | عضویت | {{ site.site_name }}{% endblock %}
+{% block desc %}ورود یا عضویت با شمارهٔ موبایل{% endblock %}
+{% block page %}login{% endblock %}
+{% block body %}
+<main><div class="all pageWrap"><div class="authBox card">
+ <button type="button" class="staffLink" id="staffToggle">ورود کاربر</button>
+ <div id="userPane">
+  <div id="step1">
+   <h1>ورود | عضویت</h1>
+   <p class="sub">شمارهٔ موبایل خود را وارد کنید تا کد تأیید برایتان پیامک شود.</p>
+   <div class="field" id="fPhone"><label for="phone">شمارهٔ موبایل<b>*</b></label><input id="phone" class="ltr" type="tel" inputmode="numeric" placeholder="09123456789" maxlength="14" autocomplete="tel"><span class="ferr" id="phoneErr">شمارهٔ موبایل را درست وارد کنید (مثلاً ۰۹۱۲۳۴۵۶۷۸۹).</span></div>
+   <button class="btnGlobal full" id="send">ارسال کد تأیید</button>
+  </div>
+  <div id="step2" hidden>
+   <h1>کد تأیید</h1>
+   <p class="sub">کد ۵ رقمی ارسال‌شده به <b id="shownPhone" class="ltr" style="display:inline-block"></b> را وارد کنید.</p>
+   <div class="demoCode" id="demo" hidden></div>
+   <div class="field" id="fCode"><label for="code">کد تأیید<b>*</b></label><input id="code" class="otp" type="tel" inputmode="numeric" maxlength="8" placeholder="••••••" autocomplete="one-time-code"><span class="ferr" id="codeErr">کد اشتباه است.</span></div>
+   <button class="btnGlobal full" id="verify">تأیید و ادامه</button>
+   <div class="rowBetween"><button class="linkBtn" id="edit">ویرایش شماره</button><span><span id="timer" class="locTxt"></span> <button class="linkBtn" id="resend" hidden>ارسال مجدد کد</button></span></div>
+  </div>
+ </div>
+ <div id="staffPane" hidden>
+  <h1>ورود کاربر</h1>
+  <p class="sub">نام کاربری (یا شمارهٔ موبایل) و رمزی که مدیر به شما داده را وارد کنید.</p>
+  <div class="field" id="fSu"><label for="su">نام کاربری یا شمارهٔ موبایل<b>*</b></label><input id="su" class="ltr" autocomplete="username"></div>
+  <div class="field" id="fSp"><label for="sp">رمز عبور<b>*</b></label><input id="sp" type="password" class="ltr" autocomplete="current-password"><span class="ferr" id="staffErr">نام کاربری یا رمز اشتباه است.</span></div>
+  <button class="btnGlobal full" id="staffGo">ورود</button>
+ </div>
+</div></div></main>
+{% endblock %}
+{% block script %}{% verbatim %}
+
+const next=safeNext(qs('next'));
+const toReg=()=>'/register/'+(next?'?next='+encodeURIComponent(next):'');
+if(ME&&location.hash!=='#staff')location.replace(ME.complete?(next||'/'):toReg());
+const normPhone=v=>{v=toEn(v).replace(/[\s\-()]/g,'');if(v.startsWith('+98'))v='0'+v.slice(3);else if(v.startsWith('0098'))v='0'+v.slice(4);else if(/^9\d{9}$/.test(v))v='0'+v;return v};
+let phone='',exp=0,tm=null;
+const setStep=n=>{$('#step1').hidden=n!==1;$('#step2').hidden=n!==2};
+function tick(){const left=Math.max(0,Math.ceil((exp-Date.now())/1000));
+  $('#timer').textContent=left?toFa(String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0')):'';
+  $('#resend').hidden=left>0;if(!left)clearInterval(tm)}
+async function sendCode(v){
+  const btn=$('#send');btn.disabled=true;
+  try{
+    const r=await api('/api/otp/send/',{phone:v});phone=r.phone;exp=Date.now()+(r.ttl||120)*1000;
+    $('#shownPhone').textContent=phone;
+    const d=$('#demo');if(r.demoCode){d.hidden=false;d.innerHTML='نسخهٔ نمایشی: کد تأیید شما <b>'+toFa(r.demoCode)+'</b> است. با اتصال پیامک واقعی این کادر دیگر نمایش داده نمی‌شود.'}else d.hidden=true;
+    $('#code').value='';$('#fCode').classList.remove('bad');setStep(2);$('#code').focus();clearInterval(tm);tick();tm=setInterval(tick,1000);
+  }catch(e){$('#phoneErr').textContent=e.message;$('#fPhone').classList.add('bad')}
+  btn.disabled=false}
+$('#send').onclick=()=>{const v=normPhone($('#phone').value),ok=/^09\d{9}$/.test(v);$('#phoneErr').textContent='شمارهٔ موبایل را درست وارد کنید (مثلاً ۰۹۱۲۳۴۵۶۷۸۹).';$('#fPhone').classList.toggle('bad',!ok);if(ok)sendCode(v)};
+$('#phone').addEventListener('keydown',e=>{if(e.key==='Enter')$('#send').click()});
+$('#code').addEventListener('keydown',e=>{if(e.key==='Enter')$('#verify').click()});
+$('#edit').onclick=()=>{clearInterval(tm);setStep(1)};
+$('#resend').onclick=()=>sendCode(phone);
+/* ورود کاربر (راننده / انباردار): با نام کاربری و رمز؛ نقش را سرور تشخیص می‌دهد */
+let staffMode=false;
+function staffView(on){staffMode=on;$('#userPane').hidden=on;$('#staffPane').hidden=!on;$('#staffToggle').textContent=on?'ورود مشتری':'ورود کاربر';if(on)$('#su').focus()}
+$('#staffToggle').onclick=()=>staffView(!staffMode);
+if(location.hash==='#staff')staffView(true);
+async function staffLogin(){const u=$('#su').value.trim(),p=$('#sp').value;if(!u||!p){$('#staffErr').textContent='نام کاربری و رمز را وارد کنید.';$('#fSp').classList.add('bad');return}
+  const b=$('#staffGo');b.disabled=true;
+  try{const r=await api('/api/staff/login/',{username:u,password:p});location.href=r.url}
+  catch(e){$('#staffErr').textContent=e.message;$('#fSp').classList.add('bad');b.disabled=false}}
+$('#staffGo').onclick=staffLogin;$('#sp').addEventListener('keydown',e=>{if(e.key==='Enter')staffLogin()});$('#su').addEventListener('keydown',e=>{if(e.key==='Enter')$('#sp').focus()});
+$('#verify').onclick=async()=>{const c=toEn($('#code').value).trim(),f=$('#fCode');
+  if(!/^\d{5}$/.test(c)){$('#codeErr').textContent='کد ۵ رقمی را وارد کنید.';f.classList.add('bad');return}
+  try{const r=await api('/api/otp/verify/',{phone,code:c});clearInterval(tm);location.replace(r.complete?(next||'/'):toReg())}
+  catch(e){$('#codeErr').textContent=e.message;f.classList.add('bad')}};
+
+{% endverbatim %}{% endblock %}

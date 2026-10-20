@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}پخش و عمده قطعات یدکی خودرو | {{ site.site_name }}{% endblock %}
+{% block desc %}مرکز پخش و فروش عمده قطعات یدکی خودرو؛ لنت، فیلتر، جلوبندی، برق و روشنایی با قیمت عمده.{% endblock %}
+{% block page %}home{% endblock %}
+{% block body %}
+<main><div class="all">
+
+  <div class="oneSlide mt48" id="hero"><div class="slides" id="slides"></div>
+    <div class="sbtn p" id="sp" data-i="right" aria-label="قبلی" role="button" tabindex="0"></div>
+    <div class="sbtn n" id="sn" data-i="left" aria-label="بعدی" role="button" tabindex="0"></div>
+    <div class="pager" id="pager"></div></div>
+
+  <div class="benefits" id="benefits"></div>
+
+  <div class="suggestion tabProducts" style="margin-top:0" id="special"><div>
+    <div class="flex jb ac"><div class="boxTitleGlobal">پیشنهاد ویژه یدک‌پخش</div><a href="/category/#list=special" class="btnGlobal p12 white" style="opacity:.8;font-size:.72em">مشاهده همه</a></div>
+    <div class="tabBox carwrap"><ul class="productBox" id="sugBox"></ul>
+      <div class="swBtn p" data-sc="sugBox" data-d="1" data-i="right"></div><div class="swBtn n" data-sc="sugBox" data-d="-1" data-i="left"></div></div>
+  </div></div>
+
+  <div class="tabProducts whiteBg radius16 mt48" id="best">
+    <div class="flex jb ac"><div class="boxTitleGlobal">پرفروش‌ترین‌ها</div></div>
+    <div class="tabBtn" id="bestTabs"></div>
+    <div class="arrows"><div class="swBtn p" data-sc="bestBox" data-d="1" data-i="right"></div><div class="swBtn n" data-sc="bestBox" data-d="-1" data-i="left"></div></div>
+    <div class="tabBox"><ul class="productBox" id="bestBox"></ul></div>
+    <a href="/category/#list=best" class="btnGlobal transparent borderGray colorYellow p12 moreBtn">مشاهده همه</a>
+  </div>
+
+  <div class="listBanner two mt48" id="banners2"></div>
+
+  <div class="tabProducts whiteBg radius16 mt48" id="newest">
+    <div class="flex jb ac"><div class="boxTitleGlobal">جدیدترین محصولات</div><a href="/category/#list=new" class="btnGlobal transparent borderGray colorYellow p12" style="font-size:.66em">مشاهده همه</a></div>
+    <div class="arrows"><div class="swBtn p" data-sc="newBox" data-d="1" data-i="right"></div><div class="swBtn n" data-sc="newBox" data-d="-1" data-i="left"></div></div>
+    <div class="tabBox"><ul class="productBox" id="newBox"></ul></div>
+  </div>
+
+  <div class="productCategory brands whiteBg radius8" id="brands">
+    <div class="boxTitleGlobal center">برندهای معتبر</div>
+    <div class="brandsRow" id="brandsRow"></div>
+  </div>
+
+  <div class="lastSeen" id="lastSeen"></div>
+
+  <div class="aboutAbzarReza" id="about">
+    <div class="title"><h1>یدک‌پخش، مرکز پخش و فروش عمده قطعات یدکی خودرو</h1></div>
+    <div class="text"><div class="showMore" id="aboutBox">
+      <p>یدک‌پخش مرجع تأمین قطعات یدکی برای فروشگاه‌ها، تعمیرگاه‌ها و رانندگان است. در این سایت قیمت عمده هر قطعه و حداقل تعداد خرید عمده روی کارت محصول مشخص است.</p>
+      <p>قطعات از برندهای معتبر داخلی و خارجی تأمین می‌شوند. اگر کد فنی یا مدل خودرو را بفرستید، کارشناسان ما قطعه سازگار را پیدا می‌کنند و پیش‌فاکتور رسمی همان روز ارسال می‌شود.</p>
+      <p>سفارش‌ها با باربری، تیپاکس و پیک به سراسر کشور ارسال می‌شوند. قطعات حساس مانند لنت، دیسک و شمع در بسته‌بندی ضدضربه ارسال می‌شود.</p>
+    </div></div>
+    <a class="btnGlobal transparent borderGray colorYellow more" id="aboutBtn" style="cursor:pointer">مشاهده بیشتر</a>
+  </div>
+</div></main>
+{% endblock %}
+{% block script %}{% verbatim %}
+
+/* ---- hero (از تنظیمات سایت / پنل مدیریت) ---- */
+const SL=SITE.slides;
+$('#slides').innerHTML=SL.map((s,i)=>s.img?`<div class="slide full ${s.cls}${i?'':' on'}"><img class="bg" src="${s.img}" alt="" aria-hidden="true"><${s.u?'a href="'+s.u+'"':'div'} class="fl"><img src="${s.img}" alt="${esc(s.t)}"></${s.u?'a':'div'}></div>`:`<div class="slide ${s.cls}${i?'':' on'}"><div class="txt"><h2>${esc(s.t)}</h2><p>${esc(s.p)}</p>${s.b?`<a href="${s.u}" class="btnGlobal">${esc(s.b)}</a>`:''}</div><div class="art${s.spin?' spin':''}">${s.img?`<img src="${s.img}" alt="">`:svg(s.ic)}</div></div>`).join('');
+let cur=0,timer;const sl=$$('.slide');
+$('#pager').innerHTML=sl.map((_,i)=>`<button aria-label="اسلاید ${fa(i+1)}"></button>`).join('');
+function show(i){if(!sl.length)return;cur=(i+sl.length)%sl.length;sl.forEach((s,k)=>s.classList.toggle('on',k===cur));$$('#pager button').forEach((b,k)=>b.classList.toggle('on',k===cur));clearInterval(timer);if(sl.length>1&&!matchMedia('(prefers-reduced-motion:reduce)').matches)timer=setInterval(()=>show(cur+1),6000)}
+$('#pager').onclick=e=>{const b=e.target.closest('button');if(b)show($$('#pager button').indexOf(b))};
+$('#sp').onclick=()=>show(cur-1);$('#sn').onclick=()=>show(cur+1);show(0);
+
+/* ---- benefits ---- */
+$('#benefits').innerHTML=SITE.benefits.map(b=>`<div class="item"><div class="ib">${ico(b.i)}</div><div class="text"><span>${esc(b.t)}</span><span>${esc(b.s)}</span></div></div>`).join('');
+
+
+/* ---- sections (ترتیب همان ترتیب «ترتیب نمایش» در پنل مدیریت است) ---- */
+mount($('#sugBox'),PRODUCTS.filter(p=>has(p,'s')));
+mount($('#newBox'),PRODUCTS.filter(p=>has(p,'n')));
+let tab='all';
+$('#bestTabs').innerHTML=`<div class="item active" data-tab="all">همه</div>`+CATS.filter(c=>PRODUCTS.some(p=>p.cat===c.id&&has(p,'b'))).map(c=>`<div class="item" data-tab="${c.id}">${esc(c.n)}</div>`).join('');
+function best(){mount($('#bestBox'),PRODUCTS.filter(p=>has(p,'b')&&(tab==='all'||p.cat===tab)))}best();
+$('#bestTabs').onclick=e=>{const b=e.target.closest('[data-tab]');if(!b)return;tab=b.dataset.tab;$$('#bestTabs .item').forEach(x=>x.classList.toggle('active',x===b));best()};
+const bi=b=>b.img?`<img src="${b.img}" alt="">`:svg(b.ic);
+$('#banners2').innerHTML=SITE.banners2.map(b=>`<a href="${b.u}" class="${b.cls}"><b>${esc(b.t)}</b><span>${esc(b.s)}</span>${b.b?`<span class="btnGlobal">${esc(b.b)}</span>`:''}<span class="bi">${bi(b)}</span></a>`).join('');
+$('#brandsRow').innerHTML=BRANDS.map(b=>`<a href="${catHref({brand:b})}" title="${esc(b)}">${BRAND_LOGOS[b]?`<img src="${BRAND_LOGOS[b]}" alt="${esc(b)}" draggable="false">`:esc(b)}</a>`).join('');
+const lsItems=[['پرفروش‌ترین‌ها','b','best'],['جدیدترین‌ها','n','new'],['پیشنهاد ویژه','s','special']];
+$('#lastSeen').innerHTML=lsItems.map(([t,f,k])=>`<div class="item"><a class="title" href="${catHref({list:k})}"><span>${t}</span><span>مشاهده همه</span></a><div class="box">${PRODUCTS.filter(p=>has(p,f)).slice(0,4).map(p=>`<a class="p" href="/product/?id=${p.id}">${pic(p)}<span>${esc(p.name)}</span></a>`).join('')}</div></div>`).join('');
+$('#aboutBtn').onclick=function(){const b=$('#aboutBox');b.classList.toggle('show');this.textContent=b.classList.contains('show')?'بستن':'مشاهده بیشتر'};
+paintIcons();syncBadges();
+
+{% endverbatim %}{% endblock %}

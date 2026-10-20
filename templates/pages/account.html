@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}حساب من | {{ site.site_name }}{% endblock %}
+{% block desc %}حساب کاربری، سفارش‌ها و وضعیت مالی{% endblock %}
+{% block page %}account{% endblock %}
+{% block body %}
+<main><div class="all pageWrap"><nav class="breadcrumbsGlobal" id="crumbs" aria-label="مسیر صفحه"></nav>
+<div class="accLayout">
+ <aside class="accSide card"><div class="who"><div class="avatar" id="av"></div><input type="file" id="avFile" accept="image/*" hidden><b id="wName"></b><small class="ltr" id="wPhone" style="display:block"></small></div>
+  <nav class="accNav" id="accNav"><a href="#dash" data-t="dash"><i data-i="dash"></i>داشبورد</a><a href="#orders" data-t="orders"><i data-i="box"></i>سفارش‌های من</a><a href="#profile" data-t="profile"><i data-i="user"></i>اطلاعات من</a><a href="#finance" data-t="finance"><i data-i="wallet"></i>وضعیت مالی</a><a href="#" class="red" id="logout"><i data-i="logout"></i>خروج</a></nav></aside>
+ <div class="accMain">
+  <div id="welcome"></div>
+  <section class="tab" data-tab="dash"><div class="stats" id="stats"></div><div class="card"><div class="secTitle">آخرین سفارش‌ها</div><div id="recent"></div></div></section>
+  <section class="tab" data-tab="orders"><div class="card"><div class="secTitle">سفارش‌های من</div><div id="allOrders"></div></div></section>
+  <section class="tab" data-tab="profile"><div class="card"><div class="secTitle">اطلاعات حساب</div><div class="infoGrid" id="info"></div>
+    <div class="mapBox sm" id="pmap" style="margin-top:18px"></div><div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap"><a class="btnGlobal" href="/register/?edit=1">ویرایش اطلاعات</a><a class="btnGlobal transparent borderGray" id="osm" target="_blank" rel="noopener">مشاهده روی نقشه</a></div></div></section>
+  <section class="tab" data-tab="finance"><div class="card"><div class="secTitle">وضعیت مالی</div><div id="fin"></div></div></section>
+ </div></div></div></main>
+{% endblock %}
+{% block script %}{% verbatim %}
+
+if(requireAuth()){
+ const u=ME,debt=AUTH.debt(u);
+ $('#crumbs').innerHTML='<a href="/">خانه</a><i data-i="left"></i><span aria-current="page">حساب من</span>';
+ $('#av').innerHTML=(u.photo?`<img src="${u.photo}" alt="">`:esc((u.first||'؟').charAt(0)))+'<span class="avEdit" id="avEdit" title="تغییر عکس" role="button" tabindex="0">✎</span>';
+ $('#avEdit').onclick=()=>$('#avFile').click();
+ $('#avFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const b=await resizeImage(f,800),fd=new FormData();fd.append('photo',b,'photo.jpg');await apiForm('/api/profile/photo/',fd);location.reload()}catch(x){toast(x.message||'عکس آپلود نشد')}};$('#wName').textContent=u.first+' '+u.last;$('#wPhone').textContent=u.phone;
+ if(qs('welcome'))$('#welcome').innerHTML='<div class="alert ok"><i data-i="check"></i><span>ثبت‌نام شما کامل شد. خوش آمدید!</span></div>';
+ if(u.blocked)$('#welcome').innerHTML+='<div class="alert err"><i data-i="warn"></i><span>حساب شما مسدود است و امکان خرید ندارید. با پشتیبانی تماس بگیرید.</span></div>';
+ else if(debt>0)$('#welcome').innerHTML+=`<div class="alert err"><i data-i="warn"></i><span>بدهی معوق شما ${fa(debt)} تومان است و تا تسویه امکان خرید ندارید.</span></div>`;
+ const can=u.canBuy;
+ const row=(k,v,w)=>`<div class="infoRow${w?' wide':''}"><span>${k}</span><b>${v}</b></div>`;
+ $('#info').innerHTML=row('نام',esc(u.first))+row('نام خانوادگی',esc(u.last))+row('موبایل',`<span class="ltr" style="display:inline-block">${esc(u.phone)}</span>`)+row('ایمیل',`<span class="ltr" style="display:inline-block">${esc(u.email)}</span>`)+row('کد ملی',`<span class="ltr" style="display:inline-block">${esc(u.nid)||'-'}</span>`)+row('کد پستی',`<span class="ltr" style="display:inline-block">${esc(u.postal)||'-'}</span>`)+row('آدرس',esc(u.address),1)+row('تاریخ عضویت',u.createdAt?fdate(u.createdAt):'-');
+ $('#osm').href=osmLink(u.lat,u.lng);
+ $('#fin').innerHTML=u.blocked?`<div class="alert err"><i data-i="warn"></i><span>حساب شما توسط مدیر مسدود شده است. برای اطلاعات بیشتر تماس بگیرید: <a href="${telHref()}">${toFa(SITE.phone)}</a></span></div>`
+  :debt>0?`<div class="alert err"><i data-i="warn"></i><span>مانده بدهی شما <b>${fa(debt)} تومان</b> است. تا تسویه کامل، امکان افزودن کالا به سبد و ثبت سفارش ندارید.</span></div><p style="font-size:.8em;line-height:2.2">برای تسویه یا استعلام حساب با کارشناس مالی تماس بگیرید: <a href="${telHref()}" style="text-decoration:underline">${toFa(SITE.phone)}</a></p>`
+  :`<div class="alert ok"><i data-i="check"></i><span>حساب شما بدهی ندارد و می‌توانید خرید کنید.</span></div><a class="btnGlobal" href="/category/#cat=all">شروع خرید</a>`;
+ const empty=`<div class="emptyBox">${svg('bearing')}<br>هنوز سفارشی ثبت نکرده‌اید.<br><a class="btnGlobal" style="margin-top:12px;display:inline-flex" href="/category/#cat=all">شروع خرید</a></div>`;
+ const oc=o=>{const st=STATUS[o.status]||[o.statusLabel,'#555'];return `<div class="ordCard"><div class="ordTop"><a href="/order/?id=${o.number}"><b>سفارش ${esc(o.number)}</b></a><span class="chip" style="color:${st[1]}">${esc(st[0])}</span><span style="color:var(--grayIcon)">${fdate(o.date)}</span></div><a href="/order/?id=${o.number}" class="ordIcons">${o.items.slice(0,6).map(i=>`<span title="${esc(i.name)}">${picI(i)}</span>`).join('')}${o.items.length>6?`<small>+${fa(o.items.length-6)}</small>`:''}</a><div class="ordBot"><span>${fa(o.items.length)} ردیف کالا</span><b>${fa(o.total)} تومان</b></div>
+   ${o.canPay?`<div style="margin-top:12px"><a class="btnGlobal" href="/order/?id=${o.number}" style="display:inline-flex">مجاز شد — پرداخت آنلاین</a></div>`:''}
+   ${o.invoice?`<div style="margin-top:12px"><a class="pdfBtn" href="${o.invoice}" target="_blank" rel="noopener">${pdfBadge()}فاکتور PDF</a></div>`:''}</div>`};
+ const stats=orders=>{const paid=orders.filter(o=>o.paidAt).reduce((a,o)=>a+o.total,0);
+  $('#stats').innerHTML=`<div class="stat"><small>تعداد سفارش‌ها</small><b>${fa(orders.length)}</b></div><div class="stat"><small>جمع خریدهای پرداخت‌شده</small><b>${fa(paid)} <small style="display:inline">تومان</small></b></div><div class="stat ${debt>0?'bad':'good'}"><small>مانده بدهی</small><b>${fa(debt)} <small style="display:inline">تومان</small></b></div><div class="stat ${can?'good':'bad'}"><small>وضعیت خرید</small><b>${can?'مجاز':'مسدود'}</b></div>`;
+  $('#recent').innerHTML=orders.length?orders.slice(0,3).map(oc).join(''):empty;
+  $('#allOrders').innerHTML=orders.length?orders.map(oc).join(''):empty;paintIcons()};
+ stats([]);
+ api('/api/my/orders/').then(r=>stats(r.orders)).catch(()=>{});
+ let mapDone=false;
+ function tab(){const h=location.hash.slice(1).split('?')[0],t=['dash','orders','profile','finance'].includes(h)?h:'dash';
+  $$('.tab').forEach(x=>x.classList.toggle('on',x.dataset.tab===t));$$('#accNav a[data-t]').forEach(a=>a.classList.toggle('on',a.dataset.t===t));
+  if(t==='profile'&&!mapDone){mapDone=true;mapPicker($('#pmap'),{lat:u.lat,lng:u.lng,readonly:true})}}
+ addEventListener('hashchange',tab);tab();
+ $('#logout').onclick=async e=>{e.preventDefault();try{await api('/api/logout/',{})}catch(x){}location.href='/'};
+ paintIcons();
+}
+
+{% endverbatim %}{% endblock %}

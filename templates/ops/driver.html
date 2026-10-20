@@ -1,0 +1,100 @@
+{% extends "ops_base.html" %}
+{% load fa_tags %}
+{% block title %}راننده | {{ site.site_name }}{% endblock %}
+{% block body %}
+<div class="opsTop"><b>{{ site.site_name }} — راننده | {{ driver.name }}</b><div class="opsNav"><a href="{% url 'driver_home' %}?tab={{ tab }}">بروزرسانی</a><a href="{% url 'driver_logout' %}">خروج</a></div></div>
+<div class="opsWrap" data-count="{{ stats.ready }}" data-key="ready" data-url="{% url 'driver_count' %}">
+  <div class="newBanner" id="newBanner" hidden>سفارش جدیدی آمادهٔ ارسال شد. <a href="{% url 'driver_home' %}">بارگذاری مجدد</a></div>
+
+  <div class="stats noprint">
+    <div class="st"><small>آمادهٔ ارسال</small><b>{{ stats.ready }}</b></div>
+    <div class="st"><small>در مسیر من</small><b>{{ stats.mine }}</b></div>
+    <div class="st"><small>تحویل‌شدهٔ امروز</small><b>{{ stats.today }}</b></div>
+    <div class="st"><small>کل تحویل‌های من</small><b>{{ stats.total }}</b></div>
+  </div>
+
+  <div class="tabsOps noprint">
+    <a class="{% if tab == 'ready' %}on{% endif %}" href="?tab=ready">آمادهٔ ارسال <span class="cnt2">{{ stats.ready }}</span></a>
+    <a class="{% if tab == 'mine' %}on{% endif %}" href="?tab=mine">در مسیر من <span class="cnt2">{{ stats.mine }}</span></a>
+    <a class="{% if tab == 'done' %}on{% endif %}" href="?tab=done">آرشیو تحویل‌شده‌ها <span class="cnt2">{{ stats.total }}</span></a>
+  </div>
+
+  {% include "ops/_filters.html" %}
+
+  {% for g in groups %}
+  <div class="dayHead">{{ g.date }}</div>
+  <div class="opsGrid">
+    {% for j in g.cards %}
+    <div class="job" {% if tab == 'mine' %}style="border-color:var(--yellow)"{% endif %}>
+      <h3><span>{{ j.o.number }}</span><span class="chip">{{ j.rows|length }} قلم · {{ j.qty }} عدد</span></h3>
+      <div class="metaGrid">
+        <div><span>خریدار</span><b>{{ j.o.name }}</b></div>
+        <div><span>تلفن</span><b><a href="tel:{{ j.o.phone }}">{{ j.o.phone }}</a></b></div>
+        <div class="wide"><span>آدرس</span><b>{{ j.o.address }}</b></div>
+        <div><span>کد پستی</span><b>{{ j.o.postal_code|default:"—" }}</b></div>
+        <div><span>روش ارسال</span><b>{{ j.o.ship_method|default:"—" }}</b></div>
+        {% if j.o.lat %}
+        <div class="wide"><span>مسیر</span><b>
+          <a target="_blank" rel="noopener" href="https://www.google.com/maps?q={{ j.o.lat|stringformat:'f' }},{{ j.o.lng|stringformat:'f' }}">📍 گوگل مپ</a> ·
+          <a target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat={{ j.o.lat|stringformat:'f' }}&mlon={{ j.o.lng|stringformat:'f' }}#map=17/{{ j.o.lat|stringformat:'f' }}/{{ j.o.lng|stringformat:'f' }}">OpenStreetMap</a></b></div>
+        {% endif %}
+        <div><span>پرداخت</span><b>{{ j.o.paid_at|jdt }}</b></div>
+        <div><span>جمع‌آوری</span><b>{{ j.o.collected_at|jdt }}</b></div>
+        <div><span>جمع‌کنندهٔ انبار</span><b>{{ j.o.collected_by.name|default:"—" }}</b></div>
+        {% if j.o.shipped_at %}<div><span>برداشتن توسط راننده</span><b>{{ j.o.shipped_at|jdt }}</b></div>{% endif %}
+        {% if j.o.delivered_at %}<div><span>تحویل به مشتری</span><b>{{ j.o.delivered_at|jdt }}</b></div>{% endif %}
+      </div>
+      {% if j.o.note %}<div class="noteBox">توضیح مشتری: {{ j.o.note }}</div>{% endif %}
+      {% if j.o.worker_note %}<div class="noteBox">یادداشت انبار: {{ j.o.worker_note }}</div>{% endif %}
+      {% if j.o.driver_note %}<div class="noteBox drv">یادداشت راننده: {{ j.o.driver_note }}</div>{% endif %}
+
+      <div class="rows">
+        {% for r in j.rows %}
+        <div class="rw">
+          <div class="th">{% if r.img %}<img src="{{ r.img }}" alt="">{% else %}📦{% endif %}</div>
+          <div class="tx"><b>{{ r.it.name }}</b><small>کد فنی: {{ r.it.model_code|default:"—" }}{% if r.it.brand %} · برند: {{ r.it.brand }}{% endif %}</small></div>
+          <div class="q">× {{ r.it.qty }}</div>
+        </div>
+        {% endfor %}
+      </div>
+
+      {% if tab == 'ready' %}
+      <form method="post" action="{% url 'driver_take' j.o.pk %}">{% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <div class="row2"><button type="button" class="btnGlobal grayB printBtn">🖨 چاپ</button><button type="submit" class="btnGlobal">🚚 برداشتم و می‌روم</button></div>
+      </form>
+      {% elif tab == 'mine' %}
+      <form method="post" action="{% url 'driver_deliver' j.o.pk %}" onsubmit="return confirm('تحویل سفارش {{ j.o.number }} انجام شد؟')">{% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <textarea name="note" rows="2" maxlength="250" placeholder="یادداشت تحویل (اختیاری) — مثلاً تحویل به همسایه / نگهبان"></textarea>
+        <div class="row2"><button type="button" class="btnGlobal grayB printBtn">🖨 چاپ</button><button type="submit" class="btnGlobal done">✔ تحویل شد</button></div>
+      </form>
+      <form method="post" action="{% url 'driver_return' j.o.pk %}" onsubmit="return confirm('سفارش {{ j.o.number }} به لیست آمادهٔ ارسال برگردانده شود؟')">{% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <input class="noteIn" name="note" maxlength="200" required placeholder="اگر نتوانستید تحویل بدهید، دلیل را بنویسید">
+        <div class="row2"><button type="submit" class="btnGlobal warnB">↩ نتوانستم تحویل بدهم</button></div>
+      </form>
+      {% else %}
+      <div class="row2 noprint"><button type="button" class="btnGlobal grayB printBtn">🖨 چاپ</button></div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% empty %}
+  <div class="emptyOps">{% if tab == 'ready' %}فعلاً سفارشی آمادهٔ ارسال نیست.{% elif tab == 'mine' %}سفارشی در مسیر ندارید.{% else %}موردی در آرشیو پیدا نشد.{% endif %}</div>
+  {% endfor %}
+
+  {% include "ops/_pager.html" %}
+</div>
+<script>
+(function(){
+  document.querySelectorAll('.printBtn').forEach(function(b){b.addEventListener('click',function(){
+    var job=b.closest('.job');job.classList.add('printing');document.body.classList.add('print-one');
+    window.print();setTimeout(function(){job.classList.remove('printing');document.body.classList.remove('print-one')},500)})});
+  var w=document.querySelector('.opsWrap');
+  if(w){var cur=parseInt(w.getAttribute('data-count')||'0',10),url=w.getAttribute('data-url'),key=w.getAttribute('data-key');
+    setInterval(function(){if(document.hidden)return;fetch(url,{credentials:'same-origin'}).then(function(r){return r.json()}).then(function(d){
+      if(d[key]>cur){document.getElementById('newBanner').hidden=false;document.title='● سفارش جدید'}}).catch(function(){})},20000)}
+})();
+</script>
+{% endblock %}

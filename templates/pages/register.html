@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}تکمیل اطلاعات | {{ site.site_name }}{% endblock %}
+{% block desc %}تکمیل اطلاعات حساب کاربری{% endblock %}
+{% block page %}register{% endblock %}
+{% block body %}
+<main><div class="all pageWrap"><div class="card" style="max-width:860px;margin:20px auto">
+ <div class="steps"><span class="on"></span><span class="on"></span><span class="on"></span></div>
+ <h1 class="pgTitle" id="regTitle" style="margin-top:0">تکمیل اطلاعات حساب</h1>
+ <p id="regSub" style="font-size:.78em;color:var(--grayIcon);line-height:2;margin-bottom:18px">برای ورود به حساب و خرید، همهٔ فیلدهای زیر اجباری است.</p>
+ <div class="avatarPick"><div class="avBox" id="avBox" title="انتخاب عکس"><span id="avPh">+</span><img id="avImg" alt="" hidden></div>
+  <div><button type="button" class="btnGlobal" id="avBtn">انتخاب عکس پروفایل</button><input type="file" id="avFile" accept="image/*" hidden><div class="hint" style="margin-top:6px">اختیاری — عکس JPG یا PNG</div><span class="ferr" id="avErr" style="display:block;color:var(--red);font-size:.66em"></span></div></div>
+ <div class="field"><label>شمارهٔ موبایل</label><input id="phoneRo" class="ltr" readonly></div>
+ <div class="grid2">
+  <div class="field" id="fFirst"><label for="first">نام<b>*</b></label><input id="first" autocomplete="given-name" maxlength="40"><span class="ferr">نام را وارد کنید.</span></div>
+  <div class="field" id="fLast"><label for="last">نام خانوادگی<b>*</b></label><input id="last" autocomplete="family-name" maxlength="60"><span class="ferr">نام خانوادگی را وارد کنید.</span></div>
+ </div>
+ <div class="field" id="fEmail"><label for="email">ایمیل<b>*</b></label><input id="email" class="ltr" type="email" autocomplete="email" maxlength="100" placeholder="name@example.com"><span class="ferr">ایمیل معتبر وارد کنید.</span></div>
+ <div class="grid2">
+  <div class="field" id="fNid"><label for="nid">کد ملی<b>*</b></label><input id="nid" class="ltr" inputmode="numeric" maxlength="10" autocomplete="off"><span class="ferr" id="nidErr">کد ملی معتبر نیست (۱۰ رقم).</span><span class="hint" id="nidHint"></span></div>
+  <div class="field" id="fPostal"><label for="postal">کد پستی<b>*</b></label><input id="postal" class="ltr" inputmode="numeric" maxlength="10" autocomplete="postal-code"><span class="ferr" id="postalErr">کد پستی باید ۱۰ رقم باشد.</span></div>
+ </div>
+ <div class="field" id="fAddr"><label for="addr">آدرس کامل<b>*</b></label><textarea id="addr" rows="3" maxlength="300" placeholder="استان، شهر، خیابان، پلاک، کد پستی"></textarea><span class="ferr">آدرس را کامل‌تر بنویسید (حداقل ۱۰ حرف).</span></div>
+ <div class="field" id="fLoc"><label>موقعیت روی نقشهٔ ایران<b>*</b></label>
+  <div class="mapBox" id="map"></div>
+  <div class="mapTools"><button type="button" class="btnGlobal" id="gps"><i data-i="gps" style="display:inline-flex;vertical-align:middle;margin-left:6px"></i>موقعیت فعلی من</button><span class="locTxt" id="locTxt">روی نقشه کلیک کنید یا پین را جابه‌جا کنید.</span></div>
+  <div class="manualLoc" id="manual"><div class="grid2"><div class="field"><label for="mLat">عرض جغرافیایی (Lat)</label><input id="mLat" class="ltr" inputmode="decimal" placeholder="35.6892"></div><div class="field"><label for="mLng">طول جغرافیایی (Lng)</label><input id="mLng" class="ltr" inputmode="decimal" placeholder="51.3890"></div></div></div>
+  <span class="ferr" id="locErr">موقعیت را روی نقشه (داخل ایران) انتخاب کنید.</span></div>
+ <div class="field" id="fDebt"><label for="debt">مبلغ بدهی فعلی شما (تومان)<b>*</b></label><input id="debt" class="ltr" inputmode="numeric" placeholder="0" maxlength="15"><span class="ferr" id="debtErr">مبلغ بدهی را وارد کنید (اگر بدهی ندارید ۰).</span>
+  <span class="hint" id="debtHint">اگر بدهی ندارید عدد ۰ را وارد کنید. در صورت داشتن بدهی، تا تسویه حساب امکان خرید نخواهید داشت.</span></div>
+ <button class="btnGlobal full" id="save">ثبت اطلاعات و ورود به حساب</button>
+</div></div></main>
+{% endblock %}
+{% block script %}{% verbatim %}
+
+const next=safeNext(qs('next')),edit=qs('edit')==='1';
+if(!ME)location.replace('/login/?next='+encodeURIComponent('/register/'+location.search));
+const u=ME||{};
+if(ME&&u.complete&&!edit)location.replace(next||'/');
+if(edit){$('#regTitle').textContent='ویرایش اطلاعات';$('#regSub').textContent='اطلاعات خود را به‌روز کنید.';$('#save').textContent='ذخیرهٔ تغییرات'}
+$('#phoneRo').value=u.phone||'';
+['first','last','email'].forEach(k=>{if(u[k])$('#'+k).value=u[k]});if(u.address)$('#addr').value=u.address;
+if(u.nid)$('#nid').value=u.nid;if(u.postal)$('#postal').value=u.postal;
+if(u.complete&&u.nid){$('#nid').disabled=true;$('#nidHint').textContent='کد ملی بعد از ثبت فقط توسط مدیر تغییر می‌کند.'}
+$('#nid').addEventListener('input',e=>{e.target.value=toEn(e.target.value).replace(/\D/g,'')});$('#postal').addEventListener('input',e=>{e.target.value=toEn(e.target.value).replace(/\D/g,'')});
+/* عکس پروفایل */
+let avBlob=null;
+const showAv=src=>{$('#avImg').src=src;$('#avImg').hidden=false;$('#avPh').hidden=true};
+if(u.photo)showAv(u.photo);
+$('#avBtn').onclick=$('#avBox').onclick=()=>$('#avFile').click();
+$('#avFile').onchange=async e=>{const f=e.target.files[0];$('#avErr').textContent='';if(!f)return;
+  if(!/^image\//.test(f.type)){$('#avErr').textContent='فقط فایل عکس انتخاب کنید.';return}
+  try{avBlob=await resizeImage(f,800);showAv(URL.createObjectURL(avBlob))}catch(x){$('#avErr').textContent='این عکس خوانده نشد؛ عکس دیگری انتخاب کنید.'}};
+const fmt=v=>{const d=toEn(v).replace(/\D/g,'').replace(/^0+(?=\d)/,'');return d?Number(d).toLocaleString('en-US'):''};
+if(u.complete){$('#debt').value=fmt(String(u.debt||0))||'0';$('#debt').disabled=true;$('#debtHint').textContent='مانده بدهی را فقط مدیر فروشگاه تغییر می‌دهد.'}
+$('#debt').addEventListener('input',e=>{e.target.value=fmt(e.target.value)});
+/* نقشهٔ ایران */
+let loc=(u.lat!=null&&u.lng!=null)?{lat:u.lat,lng:u.lng}:null;
+const inIran=(la,ln)=>la>=24&&la<=40.5&&ln>=43.5&&ln<=64;
+const showLoc=()=>{const t=$('#locTxt');if(loc){t.textContent='موقعیت انتخاب شد: '+loc.lat.toFixed(5)+' ، '+loc.lng.toFixed(5);t.className='locTxt ok';$('#fLoc').classList.remove('bad');$('#map').classList.remove('bad')}};
+const mp=mapPicker($('#map'),{lat:loc&&loc.lat,lng:loc&&loc.lng,onPick:p=>{loc=p;showLoc()},onFail:()=>$('#manual').classList.add('on')});
+if(loc)showLoc();
+function setLoc(la,ln){loc={lat:+(+la).toFixed(6),lng:+(+ln).toFixed(6)};showLoc();mp.move(loc.lat,loc.lng)}
+$('#gps').onclick=()=>{if(!navigator.geolocation){toast('مرورگر شما موقعیت‌یابی را پشتیبانی نمی‌کند');return}
+  toast('در حال دریافت موقعیت...');navigator.geolocation.getCurrentPosition(p=>setLoc(p.coords.latitude,p.coords.longitude),()=>{toast('دسترسی به موقعیت داده نشد؛ روی نقشه انتخاب کنید');$('#manual').classList.add('on')},{enableHighAccuracy:true,timeout:10000})};
+const manual=()=>{const la=parseFloat(toEn($('#mLat').value)),ln=parseFloat(toEn($('#mLng').value));if(isFinite(la)&&isFinite(ln))setLoc(la,ln)};
+$('#mLat').addEventListener('change',manual);$('#mLng').addEventListener('change',manual);
+function bad(id,cond){$('#'+id).classList.toggle('bad',cond);return cond}
+$('#save').onclick=async()=>{
+  const first=$('#first').value.trim(),last=$('#last').value.trim(),email=$('#email').value.trim(),addr=$('#addr').value.trim(),debtS=toEn($('#debt').value).replace(/\D/g,''),nid=toEn($('#nid').value).trim(),postal=toEn($('#postal').value).trim();
+  const errs=[bad('fFirst',first.length<2),bad('fLast',last.length<2),bad('fEmail',!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)),bad('fAddr',addr.length<10),bad('fNid',!(u.complete&&u.nid)&&!validNid(nid)),bad('fPostal',!/^\d{10}$/.test(postal))];
+  const locBad=!loc||!inIran(loc.lat,loc.lng);$('#fLoc').classList.toggle('bad',locBad);$('#map').classList.toggle('bad',locBad);errs.push(locBad);
+  if(!u.complete)errs.push(bad('fDebt',debtS===''));
+  if(errs.some(Boolean)){const f=$('.field.bad');if(f)f.scrollIntoView({behavior:'smooth',block:'center'});toast('لطفاً همهٔ فیلدها را درست پر کنید');return}
+  const btn=$('#save');btn.disabled=true;
+  try{
+    await api('/api/profile/',{first,last,email,address:addr,nid,postal,lat:loc.lat,lng:loc.lng,debt:u.complete?undefined:debtS});
+    if(avBlob){try{const fd=new FormData();fd.append('photo',avBlob,'photo.jpg');await apiForm('/api/profile/photo/',fd)}catch(x){toast('اطلاعات ثبت شد اما عکس آپلود نشد: '+x.message)}}
+    location.href=edit?(next||'/account/#profile'):(next||'/');
+  }catch(e){
+    const f=(e.data&&e.data.fields)||{};
+    bad('fFirst',!!f.first);bad('fLast',!!f.last);bad('fEmail',!!f.email);bad('fAddr',!!f.address);bad('fDebt',!!f.debt);bad('fNid',!!f.nid);bad('fPostal',!!f.postal);
+    if(f.loc){$('#fLoc').classList.add('bad');$('#map').classList.add('bad')}
+    toast(e.message);btn.disabled=false}};
+paintIcons();
+
+{% endverbatim %}{% endblock %}

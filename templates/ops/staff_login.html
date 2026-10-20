@@ -1,0 +1,15 @@
+{% extends "ops_base.html" %}
+{% block title %}ورود کاربر | {{ site.site_name }}{% endblock %}
+{% block body %}
+<div class="opsTop"><b>{{ site.site_name }}</b><a href="/">بازگشت به سایت</a></div>
+<div class="loginBox">
+  <h1>ورود کاربر</h1>
+  <p>نام کاربری (یا شمارهٔ موبایل) و رمزی که مدیر به شما داده را وارد کنید. اگر راننده باشید صفحهٔ راننده و اگر انباردار باشید صفحهٔ انبار باز می‌شود.</p>
+  {% if error %}<div class="errBox">{{ error }}</div>{% endif %}
+  <form method="post">{% csrf_token %}
+    <div class="field"><label for="u">نام کاربری یا شمارهٔ موبایل</label><input id="u" name="username" class="ltr" autocomplete="username" autofocus required></div>
+    <div class="field"><label for="p">رمز عبور</label><input id="p" name="password" type="password" class="ltr" autocomplete="current-password" required></div>
+    <button class="btnGlobal full" type="submit" style="border:0;cursor:pointer">ورود</button>
+  </form>
+</div>
+{% endblock %}

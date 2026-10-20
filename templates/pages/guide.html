@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}راهنمای خرید | {{ site.site_name }}{% endblock %}
+{% block page %}guide{% endblock %}
+{% block body %}
+<main><div class="all pageWrap">
+  <nav class="breadcrumbsGlobal"><a href="/">خانه</a><i data-i="left"></i><span aria-current="page">راهنمای خرید</span></nav>
+  <h1 class="pgTitle">{% if p %}{{ p.title }}{% else %}راهنمای خرید{% endif %}</h1>
+  <div class="prose" style="margin-bottom:18px">{{ html }}</div>
+  {% if faqs %}
+  <h2 class="pgTitle" style="font-size:1.1em">سؤالات متداول</h2>
+  <div class="faq" style="max-width:900px">
+    {% for f in faqs %}<details><summary>{{ f.question }}</summary><p>{{ f.answer|linebreaksbr }}</p></details>{% endfor %}
+  </div>
+  {% endif %}
+</div></main>
+{% endblock %}
+{% block script %}paintIcons();{% endblock %}

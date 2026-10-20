@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}سبد خرید | {{ site.site_name }}{% endblock %}
+{% block desc %}سبد خرید و ثبت سفارش{% endblock %}
+{% block page %}cart{% endblock %}
+{% block body %}
+<main><div class="all pageWrap"><nav class="breadcrumbsGlobal" id="crumbs" aria-label="مسیر صفحه"></nav><h1 class="pgTitle">سبد خرید</h1><div id="cartRoot"></div></div></main>
+{% endblock %}
+{% block script %}{% verbatim %}
+
+$('#crumbs').innerHTML='<a href="/">خانه</a><i data-i="left"></i><span aria-current="page">سبد خرید</span>';
+let shipSel='',noteVal='';
+function draw(){
+  const root=$('#cartRoot'),u=ME;
+  if(!CART.length){root.innerHTML=`<div class="card emptyBox">${svg('bearing')}<br>سبد خرید شما خالی است.<br><a class="btnGlobal" style="margin-top:14px;display:inline-flex" href="/category/#cat=all">مشاهدهٔ محصولات</a></div>`;paintIcons();return}
+  const cs=$('input[name=ship]:checked'),cn=$('#note');if(cs)shipSel=cs.value;if(cn)noteVal=cn.value;
+  const n=CART.reduce((a,c)=>a+c.q,0),total=cartTotal();
+  const bl=u&&u.complete&&u.blocked,db=u&&u.complete&&AUTH.debt(u)>0;
+  let alertH='';
+  if(bl)alertH=`<div class="alert err"><i data-i="warn"></i><span>حساب شما مسدود است و امکان ثبت سفارش ندارید. با پشتیبانی تماس بگیرید: <a href="${telHref()}">${toFa(SITE.phone)}</a></span></div>`;
+  else if(db)alertH=`<div class="alert err"><i data-i="warn"></i><span>به دلیل بدهی معوق (${fa(AUTH.debt(u))} تومان) تا تسویه حساب امکان ثبت سفارش ندارید. <a href="/account/#finance">وضعیت مالی</a></span></div>`;
+  if(!shipSel&&SHIP.length)shipSel=SHIP[0].id;
+  let btn;
+  if(!u)btn=`<a class="btnGlobal full" style="margin-top:14px" href="/login/?next=/cart/">ورود و ثبت سفارش</a>`;
+  else if(!u.complete)btn=`<a class="btnGlobal full" style="margin-top:14px" href="/register/?next=/cart/">تکمیل اطلاعات و ثبت سفارش</a>`;
+  else btn=`<button class="btnGlobal full" id="place" style="margin-top:14px" ${(bl||db)?'disabled':''}>ثبت سفارش</button>`;
+  root.innerHTML=`${alertH}<div class="cartLayout"><div class="cartMain card">${CART.map((c,i)=>{const p=byId(c.id),unit=wprice(p);
+    const un=esc(p.unit||'عدد'),cat=CATS.find(x=>x.id===p.cat);
+    return `<div class="cRow"><a class="im" href="/product/?id=${p.id}">${pic(p)}</a><div class="in"><a class="nm" href="/product/?id=${p.id}">${esc(p.name)}</a>
+      <div class="spec"><span>کد فنی: <b>${esc(p.model)||'—'}</b></span>${p.brand?`<span>برند: <b>${esc(p.brand)}</b></span>`:''}${cat?`<span>دسته: <b>${esc(cat.n)}</b></span>`:''}<span>واحد: <b>${un}</b></span><span class="ok">موجود</span></div>
+      <div class="spec"><span>قیمت هر ${un}: <b>${fa(unit)} تومان</b>${p.disc>0?` <s>${fa(p.price)}</s> <em>${fa(p.disc)}٪ تخفیف</em>`:''}</span><span>حداقل سفارش: <b>${fa(p.min)} ${un}</b></span></div>
+      <div class="qtyRow"><div class="stepper"><button data-m="${i}" aria-label="کم کردن">−</button><b>${fa(c.q)}</b><button data-p="${i}" aria-label="زیاد کردن">+</button></div><span class="qtxt">${fa(c.q)} ${un} × ${fa(unit)} تومان</span></div></div>
+      <div class="pp">${fa(unit*c.q)} <small style="font-weight:400;color:var(--grayIcon)">تومان</small></div><button class="del" data-del="${i}" aria-label="حذف">${ico('trash')}</button></div>`}).join('')}</div>
+    <aside class="cartSide card"><div class="secTitle">خلاصهٔ سفارش</div>
+      ${u&&u.complete?`<div style="font-size:.74em;line-height:2;margin-bottom:10px;color:#555">تحویل به <b>${esc(u.first)} ${esc(u.last)}</b> — ${esc(u.address)} <a class="linkBtn" href="/register/?edit=1&next=/cart/">ویرایش</a></div>`:''}
+      ${SHIP.length?`<div class="optGrid" style="margin-bottom:10px">${SHIP.map(s=>`<label class="opt" style="padding:10px"><input type="radio" name="ship" value="${s.id}" ${s.id===shipSel?'checked':''}><div><b>${esc(s.n)}</b>${s.d?`<small>${esc(s.d)}</small>`:''}</div></label>`).join('')}</div>`:''}
+      <div class="field" style="margin-bottom:8px"><textarea id="note" rows="2" maxlength="300" placeholder="توضیحات سفارش (اختیاری)">${esc(noteVal)}</textarea></div>
+      <div class="sumRow"><span>تعداد اقلام</span><b>${fa(CART.length)} ردیف (${fa(n)} عدد)</b></div>
+      <div class="sumRow"><span>هزینهٔ ارسال</span><b>پس‌کرایه</b></div>
+      <div class="sumRow tot"><span>جمع کل</span><b>${fa(total)} تومان</b></div>
+      ${btn}
+      <div style="font-size:.66em;color:var(--grayIcon);line-height:2;margin-top:10px;text-align:center">سفارش ابتدا توسط مدیر تأیید می‌شود، سپس پرداخت آنلاین انجام می‌شود.</div>
+      <a class="linkBtn" style="display:block;text-align:center;margin-top:10px" href="/category/#cat=all">ادامهٔ خرید</a></aside></div>`;
+  paintIcons();
+  const pb=$('#place');if(pb)pb.onclick=async()=>{
+    const ship=$('input[name=ship]:checked');if(!ship){toast('روش ارسال را انتخاب کنید');return}
+    pb.disabled=true;pb.textContent='در حال ثبت...';
+    try{const r=await api('/api/orders/',{items:CART.map(c=>({id:c.id,q:c.q})),ship:ship.value,note:$('#note').value.trim()});clearCart();location.href='/order/?id='+r.number+'&new=1'}
+    catch(e){toast(e.message);pb.disabled=false;pb.textContent='ثبت سفارش'}}}
+$('#cartRoot').addEventListener('click',e=>{const m=e.target.closest('[data-m]'),pl=e.target.closest('[data-p]'),d=e.target.closest('[data-del]');
+  if(m){const i=+m.dataset.m;setQty(i,CART[i].q-1)}else if(pl){const i=+pl.dataset.p;setQty(i,CART[i].q+1)}else if(d)removeAt(+d.dataset.del)});
+cartHooks.push(draw);draw();
+
+{% endverbatim %}{% endblock %}

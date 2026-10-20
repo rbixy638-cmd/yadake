@@ -1,0 +1,118 @@
+{% extends "ops_base.html" %}
+{% load fa_tags %}
+{% block title %}انبار | {{ site.site_name }}{% endblock %}
+{% block body %}
+<div class="opsTop"><b>{{ site.site_name }} — انبار | {{ worker.name }}</b><div class="opsNav"><a href="{% url 'worker_home' %}?tab={{ tab }}">بروزرسانی</a><a href="{% url 'worker_logout' %}">خروج</a></div></div>
+<div class="opsWrap" data-count="{{ stats.todo }}" data-key="todo" data-url="{% url 'worker_count' %}">
+  <div class="newBanner" id="newBanner" hidden>سفارش جدیدی برای جمع‌آوری رسید. <a href="{% url 'worker_home' %}">بارگذاری مجدد</a></div>
+
+  <div class="stats noprint">
+    <div class="st"><small>در انتظار جمع‌آوری</small><b>{{ stats.todo }}</b></div>
+    <div class="st"><small>جمع‌شده امروز (همه)</small><b>{{ stats.today }}</b></div>
+    <div class="st"><small>جمع‌شده امروز (من)</small><b>{{ stats.today_mine }}</b></div>
+    <div class="st"><small>تعداد کالای جمع‌شدهٔ امروز</small><b>{{ stats.items_today }}</b></div>
+    <div class="st"><small>کل جمع‌های من</small><b>{{ stats.total_mine }}</b></div>
+  </div>
+
+  <div class="tabsOps noprint">
+    <a class="{% if tab == 'todo' %}on{% endif %}" href="?tab=todo">در انتظار جمع‌آوری <span class="cnt2">{{ stats.todo }}</span></a>
+    <a class="{% if tab == 'done' %}on{% endif %}" href="?tab=done">آرشیو جمع‌شده‌ها <span class="cnt2">{{ stats.total_all }}</span></a>
+  </div>
+
+  {% include "ops/_filters.html" %}
+
+  {% for g in groups %}
+  <div class="dayHead">{{ g.date }}</div>
+  <div class="opsGrid">
+    {% for j in g.cards %}
+    <div class="job" data-job data-num="{{ j.o.number }}" {% if tab == 'todo' %}data-todo="1"{% endif %}>
+      <h3><span>{{ j.o.number }}</span>
+        <span>{% if tab == 'done' %}<span class="stChip">{{ j.o.get_status_display }}</span> {% endif %}<span class="chip">{{ j.rows|length }} قلم · {{ j.qty }} عدد</span></span></h3>
+      <div class="metaGrid">
+        <div><span>مشتری</span><b>{{ j.o.name }}</b></div>
+        <div><span>موبایل</span><b><a href="tel:{{ j.o.phone }}">{{ j.o.phone }}</a></b></div>
+        <div><span>روش ارسال</span><b>{{ j.o.ship_method|default:"—" }}</b></div>
+        <div><span>ثبت سفارش</span><b>{{ j.o.created|jdt }}</b></div>
+        <div><span>پرداخت</span><b>{{ j.o.paid_at|jdt }}</b></div>
+        {% if tab == 'done' %}
+        <div><span>جمع‌آوری</span><b>{{ j.o.collected_at|jdt }}</b></div>
+        <div><span>جمع‌کننده</span><b>{{ j.o.collected_by.name|default:"—" }}</b></div>
+        {% if j.o.driver %}<div><span>راننده</span><b>{{ j.o.driver.name }}</b></div>{% endif %}
+        {% if j.o.delivered_at %}<div><span>تحویل به مشتری</span><b>{{ j.o.delivered_at|jdt }}</b></div>{% endif %}
+        {% endif %}
+      </div>
+      {% if j.o.note %}<div class="noteBox">توضیح مشتری: {{ j.o.note }}</div>{% endif %}
+      {% if tab == 'done' and j.o.worker_note %}<div class="noteBox">یادداشت انبار: {{ j.o.worker_note }}</div>{% endif %}
+      {% if tab == 'done' and j.o.driver_note %}<div class="noteBox drv">یادداشت راننده: {{ j.o.driver_note }}</div>{% endif %}
+
+      <div class="rows">
+        {% for r in j.rows %}
+        {% if tab == 'todo' %}<label class="rw">
+          <input type="checkbox" class="pick">
+        {% else %}<div class="rw">{% endif %}
+          <div class="th">{% if r.img %}<img src="{{ r.img }}" alt="">{% else %}📦{% endif %}</div>
+          <div class="tx"><b>{{ r.it.name }}</b><small>کد فنی: {{ r.it.model_code|default:"—" }}{% if r.it.brand %} · برند: {{ r.it.brand }}{% endif %}</small></div>
+          <div class="q">× {{ r.it.qty }}</div>
+        {% if tab == 'todo' %}</label>{% else %}</div>{% endif %}
+        {% endfor %}
+      </div>
+
+      {% if tab == 'todo' %}
+      <div class="prog noprint"><span>اقلام تیک‌خورده</span><b>۰ / {{ j.rows|length }}</b></div>
+      <div class="bar noprint"><i></i></div>
+      <form method="post" action="{% url 'worker_collect' j.o.pk %}" class="collect" onsubmit="return confirm('همهٔ اقلام سفارش {{ j.o.number }} جمع شد؟')">{% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <textarea name="note" rows="2" maxlength="250" placeholder="یادداشت (اختیاری) — مثلاً کسری یا توضیح بسته‌بندی"></textarea>
+        <div class="row2">
+          <button type="button" class="btnGlobal grayB pickAll">✔ تیک همه</button>
+          <button type="button" class="btnGlobal grayB printBtn">🖨 چاپ</button>
+          <button type="submit" class="btnGlobal done doneBtn" disabled>✔ جمع شد</button>
+        </div>
+      </form>
+      {% else %}
+      <div class="row2 noprint">
+        <button type="button" class="btnGlobal grayB printBtn">🖨 چاپ</button>
+        {% if j.o.status == 'collected' and j.o.collected_by_id == worker.id %}
+        <form method="post" action="{% url 'worker_undo' j.o.pk %}" class="inline" onsubmit="return confirm('جمع‌آوری سفارش {{ j.o.number }} برگردانده شود؟')">{% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button type="submit" class="btnGlobal warnB">↩ برگرداندن به «در انتظار جمع»</button>
+        </form>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% empty %}
+  <div class="emptyOps">{% if tab == 'todo' %}فعلاً سفارشی برای جمع‌آوری نیست.{% else %}موردی در آرشیو پیدا نشد.{% endif %}</div>
+  {% endfor %}
+
+  {% include "ops/_pager.html" %}
+</div>
+<script>
+(function(){
+  var fa=function(n){return String(n).replace(/\d/g,function(d){return '۰۱۲۳۴۵۶۷۸۹'[d]})};
+  document.querySelectorAll('[data-job][data-todo]').forEach(function(j){
+    var key='yp_pick_'+j.getAttribute('data-num'),boxes=j.querySelectorAll('.pick'),btn=j.querySelector('.doneBtn'),prog=j.querySelector('.prog b'),bar=j.querySelector('.bar i');
+    var saved=[];try{saved=JSON.parse(localStorage.getItem(key)||'[]')}catch(e){}
+    boxes.forEach(function(b,i){b.checked=saved.indexOf(i)>-1});
+    function upd(){var n=0,arr=[];boxes.forEach(function(b,i){if(b.checked){n++;arr.push(i)}});
+      prog.textContent=fa(n)+' / '+fa(boxes.length);bar.style.width=(boxes.length?n*100/boxes.length:0)+'%';
+      btn.disabled=(n!==boxes.length);j.classList.toggle('ready',n===boxes.length&&boxes.length>0);
+      try{localStorage.setItem(key,JSON.stringify(arr))}catch(e){}}
+    boxes.forEach(function(b){b.addEventListener('change',upd)});
+    var all=j.querySelector('.pickAll');
+    if(all)all.addEventListener('click',function(){var every=true;boxes.forEach(function(b){if(!b.checked)every=false});boxes.forEach(function(b){b.checked=!every});upd()});
+    j.querySelector('form.collect').addEventListener('submit',function(){try{localStorage.removeItem(key)}catch(e){}});
+    upd();
+  });
+  document.querySelectorAll('.printBtn').forEach(function(b){b.addEventListener('click',function(){
+    var job=b.closest('.job');job.classList.add('printing');document.body.classList.add('print-one');
+    window.print();setTimeout(function(){job.classList.remove('printing');document.body.classList.remove('print-one')},500)})});
+  var w=document.querySelector('.opsWrap');
+  if(w){var cur=parseInt(w.getAttribute('data-count')||'0',10),url=w.getAttribute('data-url'),key=w.getAttribute('data-key');
+    setInterval(function(){if(document.hidden)return;fetch(url,{credentials:'same-origin'}).then(function(r){return r.json()}).then(function(d){
+      if(d[key]>cur){document.getElementById('newBanner').hidden=false;document.title='● سفارش جدید'}}).catch(function(){})},20000)}
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% load static %}<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#27282A">
+<title>{% block title %}{{ site.site_name }}{% endblock %}</title>
+<meta name="description" content="{% block desc %}{{ site.tagline }}{% endblock %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+<link rel="stylesheet" href="{% static 'assets/style.css' %}">
+{% if site.favicon %}<link rel="icon" href="{{ site.favicon.url }}">{% endif %}
+</head>
+<body data-page="{% block page %}{% endblock %}">
+{% block body %}{% endblock %}
+<script src="{% url 'data_js' %}"></script>
+<script src="{% static 'assets/app.js' %}"></script>
+<script>
+{% block script %}{% endblock %}
+</script>
+</body>
+</html>

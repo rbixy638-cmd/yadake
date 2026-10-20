@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.example
+.secret_key
+db.sqlite3
+pycache/
+*.py[cod]
+.venv/
+venv/
+media/
+*.log
