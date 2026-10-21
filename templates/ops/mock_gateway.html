@@ -1,0 +1,12 @@
+{% extends "ops_base.html" %}
+{% block title %}درگاه آزمایشی{% endblock %}
+{% block body %}
+<div class="opsTop"><b>درگاه پرداخت آزمایشی</b></div>
+<div class="loginBox">
+  <div class="errBox">این صفحه فقط برای تست است و پول واقعی دریافت نمی‌شود. برای سایت واقعی در «تنظیمات سایت» درگاه زرین‌پال را انتخاب کنید.</div>
+  <h1>پرداخت سفارش {{ order.number }}</h1>
+  <p>مبلغ: <b>{{ pay.amount }} تومان</b></p>
+  <a class="btnGlobal full" href="{{ ok_url }}" style="display:flex;margin-bottom:10px">پرداخت موفق</a>
+  <a class="btnGlobal transparent borderGray full" href="{{ no_url }}" style="display:flex">انصراف / ناموفق</a>
+</div>
+{% endblock %}

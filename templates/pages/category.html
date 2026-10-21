@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+{% block title %}دسته‌بندی محصولات | {{ site.site_name }}{% endblock %}
+{% block desc %}لیست قطعات یدکی با قیمت عمده؛ فیلتر بر اساس برند، قیمت و موجودی.{% endblock %}
+{% block page %}category{% endblock %}
+{% block body %}
+<main><div class="all">
+  <nav class="breadcrumbsGlobal" id="crumbs" aria-label="مسیر صفحه"></nav>
+  <div class="subTag" id="subTag"></div>
+
+  <div class="mobileArchiveBtn" id="mobBar">
+    <button class="item" id="mFilter"><i data-i="filter"></i><span>فیلتر<b id="fCnt"></b></span></button>
+    <button class="item" id="mSort"><i data-i="sort"></i><span>مرتب‌سازی</span></button>
+  </div>
+
+  <div class="archiveSection">
+    <aside class="sidebarSection" id="side" aria-label="فیلتر محصولات">
+      <div class="sbHead"><b>فیلتر محصولات</b><button id="closeF" aria-label="بستن فیلتر"><i data-i="close"></i></button></div>
+
+      <div class="sidebar justDesktop">
+        <div class="reordering"><span><i data-i="sort"></i>مرتب‌سازی:</span>
+          <div class="selectmap" id="sortSel"><button class="selected" id="sortBtn" aria-haspopup="listbox"><span id="sortLbl"></span><i data-i="down"></i></button><ul id="sortUl" role="listbox"></ul></div>
+        </div>
+      </div>
+
+      <div class="sidebar" id="filters">
+        <div class="fTop"><div class="title"><i data-i="filter"></i>فیلترها</div><button class="reset" id="resetBtn" hidden>حذف همه فیلترها</button></div>
+
+        <div class="fBlock"><button class="fHead" aria-expanded="true">دسته‌بندی محصولات<i data-i="down"></i></button><div class="fBody"><ul class="catList" id="catList"></ul></div></div>
+
+        <div class="fBlock">
+          <label class="fRow"><span>فقط کالاهای موجود</span><span class="sw"><input type="checkbox" id="fStock"><b></b></span></label>
+          <label class="fRow"><span>فقط کالاهای تخفیف‌دار</span><span class="sw"><input type="checkbox" id="fDisc"><b></b></span></label>
+        </div>
+
+        <div class="fBlock"><button class="fHead" aria-expanded="true">برند<i data-i="down"></i></button><div class="fBody">
+          <div class="searchInput"><input id="brandQ" placeholder="جستجوی برند" aria-label="جستجوی برند" autocomplete="off"><i data-i="search"></i></div>
+          <ul class="brandUl" id="brandUl"></ul></div></div>
+
+        <div class="fBlock"><button class="fHead" aria-expanded="true">محدوده قیمت عمده<i data-i="down"></i></button><div class="fBody">
+          <div class="pBoxes"><div><small>از</small><b id="pFrom"></b></div><div><small>تا</small><b id="pTo"></b></div></div>
+          <div class="pUnit">تومان</div>
+          <div class="dual"><div class="track"><div class="rng" id="rng"></div></div>
+            <input type="range" id="rMin" aria-label="کمترین قیمت"><input type="range" id="rMax" aria-label="بیشترین قیمت"></div>
+          <div class="dual-lbl"><span>گران‌ترین</span><span>ارزان‌ترین</span></div>
+        </div></div>
+      </div>
+      <div class="applyBar"><button class="btnGlobal" id="applyBtn">نمایش کالاها</button></div>
+    </aside>
+
+    <section class="left">
+      <div class="top"><div class="tHead"><span class="tIcon" id="catIcon" aria-hidden="true"></span><div class="name"><h1 class="woocommerce-products-header__title" id="catTitle"></h1><p id="catCount" aria-live="polite"></p></div></div></div>
+      <div class="chips" id="chips"></div>
+      <ul class="products columns-4" id="grid"></ul>
+      <div class="pg" id="pg" role="navigation" aria-label="صفحه‌بندی"></div>
+    </section>
+  </div>
+
+  <div class="aboutAbzarReza" id="about">
+    <h2>خرید عمده <span class="seoN">قطعات یدکی</span> از یدک‌پخش</h2>
+    <div class="text"><div class="showMore" id="aboutBox">
+      <p>در یدک‌پخش قیمت عمده هر قطعه روی کارت محصول نوشته شده و حداقل تعداد خرید عمده هم کنار تصویر مشخص است. اگر تعداد کمتر از حداقل انتخاب کنید، سبد خرید خودکار روی حداقل تنظیم می‌شود.</p>
+      <p>برای پیدا کردن <span class="seoN">قطعه</span> سازگار با خودرو می‌توانید از فیلتر برند و محدوده قیمت استفاده کنید یا کد فنی را در جستجو بنویسید. اگر مطمئن نیستید، از بخش «تماس با ما» کد یا مدل خودرو را بفرستید تا کارشناس قطعه مناسب را پیدا کند.</p>
+      <p>سفارش‌ها با باربری، تیپاکس و پیک به سراسر کشور ارسال می‌شوند. قطعات حساس مانند لنت، دیسک و شمع در بسته‌بندی ضدضربه ارسال می‌شود.</p>
+    </div></div>
+    <a class="btnGlobal transparent borderGray colorYellow more" id="aboutBtn" style="cursor:pointer">مشاهده بیشتر</a>
+  </div>
+</div></main>
+<div class="reorderingMobile" id="sortSheet" role="dialog" aria-label="مرتب‌سازی"><div class="title"><i data-i="close" id="sortX" role="button" tabindex="0" aria-label="بستن"></i><b>مرتب‌سازی بر اساس</b></div><ul class="selectmap" id="sortUlM"></ul></div>
+{% endblock %}
+{% block script %}{% verbatim %}
+/* ================= category page logic ================= */
+const PER=12,STEP=10000;
+/* ترتیب مرتب‌سازی مثل بخش‌های صفحه اصلی: پیشنهاد ویژه، پرفروش‌ترین، جدیدترین */
+const SORTS=[['def','پیش‌فرض'],['spec','پیشنهاد ویژه'],['best','پرفروش‌ترین‌ها'],['new','جدیدترین‌ها'],['cheap','ارزان‌ترین'],['exp','گران‌ترین'],['disc','بیشترین تخفیف']];
+/* همان سه بخش صفحه اصلی: [پرچم، عنوان صفحه (مثل index)، برچسب] */
+const FL={special:['s','پیشنهاد ویژه','پیشنهاد ویژه'],best:['b','همه پرفروش‌ترین‌ها','پرفروش‌ترین‌ها'],new:['n','جدیدترین محصولات','جدیدترین‌ها']};
+const S={cat:'all',sub:'',terms:[],list:'',pid:0,bt:'',q:'',brands:new Set(),pmin:0,pmax:STEP,stock:false,disc:false,sort:'def',page:1};
+let BOUNDS=[0,STEP];
+const rMin=$('#rMin'),rMax=$('#rMax');rMin.step=rMax.step=STEP;
+const inCat=()=>S.list?PRODUCTS.filter(p=>has(p,FL[S.list][0])):S.cat==='all'?PRODUCTS:PRODUCTS.filter(p=>p.cat===S.cat);
+const curCat=()=>CATS.find(c=>c.id===S.cat);
+const hitT=p=>{const n=norm(p.name+' '+p.brand+' '+(p.tags||[]).join(' '));return S.terms.some(t=>n.includes(norm(t)))};
+/* عنوان صفحه = نام همان چیزی که انتخاب شده (کالا / زیرمجموعه / پیشنهاد ویژه ...)، نه نام دستهٔ کلی */
+function pageTitle(){const c=curCat();
+  if(S.pid)return byId(S.pid).name;
+  if(S.sub)return S.sub;
+  if(S.q)return 'نتایج جستجو برای «'+S.q+'»';
+  if(S.list)return FL[S.list][1];
+  if(S.bt&&S.brands.has(S.bt))return 'محصولات برند '+S.bt;
+  return c?c.n:'همه محصولات'}
+function pageIcon(){const c=curCat();
+  if(S.pid)return pic(byId(S.pid));
+  if(S.sub){const m=inCat().find(hitT);return m?pic(m):(c?cic(c):'')}
+  return c?cic(c):''}
+const priceOn=()=>S.pmin>BOUNDS[0]||S.pmax<BOUNDS[1];
+const nActive=()=>S.brands.size+(S.stock?1:0)+(S.disc?1:0)+(priceOn()?1:0);
+const toTop=()=>{const y=$('#crumbs').getBoundingClientRect().top+scrollY-(innerWidth>1050?160:80);scrollTo({top:Math.max(0,y),behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'})};
+
+function calcBounds(){const l=inCat().map(wprice);let lo=Math.floor(Math.min(...l)/STEP)*STEP,hi=Math.ceil(Math.max(...l)/STEP)*STEP;if(hi<=lo)hi=lo+STEP;return[lo,hi]}
+function filtered(skipBrand){
+  let r=inCat();
+  if(S.pid)r=r.filter(p=>p.id===S.pid);
+  if(S.terms.length)r=r.filter(hitT);
+  if(S.q){const t=norm(S.q).trim();r=r.filter(p=>norm(p.name+' '+p.model+' '+p.brand+' '+catName(p.cat)).includes(t))}
+  r=r.filter(p=>{const w=wprice(p);return w>=S.pmin&&w<=S.pmax});
+  if(S.stock)r=r.filter(p=>p.stock>0);
+  if(S.disc)r=r.filter(p=>p.disc>0);
+  if(!skipBrand&&S.brands.size)r=r.filter(p=>S.brands.has(p.brand));
+  return r}
+/* ترتیب پیش‌فرض دقیقاً مثل صفحه اصلی: همان ترتیب لیست محصولات (بدون رفتن ناموجودها به آخر) */
+function sorted(list){
+  const f={def:(x,y)=>x.id-y.id,
+    spec:(x,y)=>(has(y,'s')-has(x,'s'))||x.id-y.id,
+    best:(x,y)=>(has(y,'b')-has(x,'b'))||x.id-y.id,
+    new:(x,y)=>(has(y,'n')-has(x,'n'))||x.id-y.id,
+    cheap:(x,y)=>wprice(x)-wprice(y)||x.id-y.id,
+    exp:(x,y)=>wprice(y)-wprice(x)||x.id-y.id,
+    disc:(x,y)=>y.disc-x.disc||x.id-y.id}[S.sort];
+  return [...list].sort(f)}
+
+/* ---- pieces ---- */
+function renderCrumbs(){const c=curCat(),t=pageTitle(),H='<i data-i="left"></i>';
+  let h='<a href="/">خانه</a>'+H;
+  if(c&&S.sub)h+=`<a href="#" data-go="all">محصولات</a>${H}<a href="#" data-go="${c.id}">${c.n}</a>${H}<span aria-current="page">${esc(t)}</span>`;
+  else if(c)h+=`<a href="#" data-go="all">محصولات</a>${H}<span aria-current="page">${c.n}</span>`;
+  else if(S.list||S.q||S.pid||S.sub||(S.bt&&S.brands.has(S.bt)))h+=`<a href="#" data-go="all">محصولات</a>${H}<span aria-current="page">${esc(t)}</span>`;
+  else h+='<span aria-current="page">همه محصولات</span>';
+  $('#crumbs').innerHTML=h}
+function renderSub(){const box=$('#subTag'),sc=box.scrollLeft,c=curCat();
+  if(!c)box.innerHTML=Object.entries(FL).map(([k,v])=>`<a href="#" data-list="${k}" class="${S.list===k?'on':''}">${v[2]}</a>`).join('')+CATS.map(x=>`<a href="#" data-go="${x.id}">${cic(x)}${x.n}</a>`).join('');
+  else{const items=c.g.flatMap(g=>g[1]).filter((x,i,a)=>a.indexOf(x)===i&&PRODUCTS.some(p=>p.cat===c.id&&norm(p.name+' '+p.brand+' '+(p.tags||[]).join(' ')).includes(norm(x))));
+    const extra=S.sub&&!items.includes(S.sub)?`<a class="on" aria-current="true">${esc(S.sub)}</a>`:'';
+    box.innerHTML=`<a href="#" data-sub="" class="${S.sub?'':'on'}">${cic(c)}همه ${c.n}</a>`+extra+items.map(x=>`<a href="#" data-sub="${x}" class="${S.sub===x?'on':''}">${x}</a>`).join('')}
+  box.scrollLeft=sc}
+function renderCatList(){
+  $('#catList').innerHTML=`<li><a href="#" data-go="all" class="${S.cat==='all'&&!S.list?'on':''}"><span class="cn">${ico('menu')}همه محصولات</span><small>${fa(PRODUCTS.length)}</small></a></li>`+CATS.map(c=>`<li><a href="#" data-go="${c.id}" class="${S.cat===c.id?'on':''}"><span class="cn">${cic(c)}${c.n}</span><small>${fa(PRODUCTS.filter(p=>p.cat===c.id).length)}</small></a></li>`).join('')}
+function buildBrands(){const bs=[...new Set(inCat().map(p=>p.brand))].sort();
+  $('#brandQ').value='';
+  $('#brandUl').innerHTML=bs.map(b=>`<li data-b="${b}"><label class="chk"><input type="checkbox" value="${b}"><span class="box"></span><span class="nm">${b}</span><span class="ct"></span></label></li>`).join('')}
+function updateBrandCounts(){const base=filtered(true);
+  $$('#brandUl li').forEach(li=>{const b=li.dataset.b,n=base.filter(p=>p.brand===b).length,inp=$('input',li);
+    $('.ct',li).textContent=fa(n);inp.checked=S.brands.has(b);li.classList.toggle('zero',n===0&&!inp.checked)})}
+function paintPrice(){const [lo,hi]=BOUNDS,span=hi-lo||1,a=(S.pmin-lo)/span*100,b=(S.pmax-lo)/span*100;
+  $('#rng').style.left=a+'%';$('#rng').style.right=(100-b)+'%';
+  $('#pFrom').textContent=fa(S.pmin);$('#pTo').textContent=fa(S.pmax);
+  rMin.style.zIndex=a>50?5:3;rMax.style.zIndex=4}
+function renderChips(){const c=[];
+  if(S.q)c.push(['q','جستجو: «'+esc(S.q)+'»']);
+  if(S.pid)c.push(['pid','کالا: '+esc(byId(S.pid).name)]);
+  S.brands.forEach(b=>c.push(['b:'+b,esc(b)]));
+  if(S.stock)c.push(['stock','فقط موجود']);
+  if(S.disc)c.push(['disc','تخفیف‌دار']);
+  if(priceOn())c.push(['price',fa(S.pmin)+' تا '+fa(S.pmax)+' تومان']);
+  $('#chips').innerHTML=c.map(([k,t])=>`<button data-chip="${esc(k)}" aria-label="حذف فیلتر ${t}">${t}<i data-i="close"></i></button>`).join('')+(c.length>1?'<button class="clr" data-chip="all">حذف همه</button>':'')}
+function renderPager(pages){const el=$('#pg');if(pages<2){el.innerHTML='';return}
+  const cur=S.page;let h=`<button data-pg="${cur-1}" ${cur<2?'disabled':''} aria-label="صفحه قبل">${ico('right')}</button>`;
+  for(let i=1;i<=pages;i++)h+=`<button class="${i===cur?'on':''}" data-pg="${i}" ${i===cur?'aria-current="page"':''}>${fa(i)}</button>`;
+  h+=`<button data-pg="${cur+1}" ${cur>=pages?'disabled':''} aria-label="صفحه بعد">${ico('left')}</button>`;el.innerHTML=h}
+function renderSort(){const lbl=SORTS.find(s=>s[0]===S.sort)[1];$('#sortLbl').textContent=lbl;
+  $('#sortUl').innerHTML=SORTS.map(([k,t])=>`<li><button data-sort="${k}" class="${k===S.sort?'on':''}" role="option" aria-selected="${k===S.sort}">${t}</button></li>`).join('');
+  $('#sortUlM').innerHTML=SORTS.map(([k,t])=>`<li class="${k===S.sort?'selected':''}"><button data-sort="${k}">${t}</button></li>`).join('')}
+
+function renderGrid(){
+  const c=curCat(),title=pageTitle(),ic=pageIcon();
+  $('#catTitle').textContent=title;document.title=title+' | یدک‌پخش';
+  $('#catIcon').innerHTML=ic||'';
+  $$('.seoN').forEach(e=>e.textContent=S.sub||(c?c.n:'قطعات یدکی'));
+  const list=sorted(filtered()),pages=Math.max(1,Math.ceil(list.length/PER));
+  S.page=Math.min(Math.max(1,S.page),pages);
+  $('#catCount').textContent=fa(list.length)+' کالا';
+  const g=$('#grid');
+  if(list.length)mount(g,list.slice((S.page-1)*PER,S.page*PER));
+  else{const none=S.sub&&c&&!nActive()&&!S.q;
+    g.innerHTML=`<li class="emptyState">${svg('bearing')}<p>${none?'فعلاً کالایی برای «'+esc(S.sub)+'» ثبت نشده است.':'کالایی با این فیلترها پیدا نشد.'}</p>${none?`<button class="btnGlobal" data-go="${c.id}">نمایش همه ${c.n}</button>`:'<button class="btnGlobal" data-chip="all">حذف همه فیلترها</button>'}</li>`}
+  renderPager(pages);renderChips();renderCrumbs();renderSub();updateBrandCounts();
+  $('#resetBtn').hidden=!(nActive()||S.q||S.sub||S.pid);
+  $('#applyBtn').textContent=list.length?'نمایش '+fa(list.length)+' کالا':'کالایی پیدا نشد';
+  $('#fCnt').textContent=nActive()?' ('+fa(nActive())+')':'';
+  $$('.q').forEach(i=>{if(document.activeElement!==i)i.value=S.q});
+  paintIcons();
+  try{history.replaceState(null,'',location.pathname+location.search+hashOf())}catch(e){}}
+function hashOf(){const h=new URLSearchParams();
+  if(S.list)h.set('list',S.list);else h.set('cat',S.cat);
+  if(S.sub){h.set('title',S.sub);h.set('terms',S.terms.join('|'))}
+  if(S.q)h.set('q',S.q);if(S.bt&&S.brands.has(S.bt))h.set('brand',S.bt);if(S.pid)h.set('find',S.pid);
+  return '#'+h}
+function syncFilterUI(){
+  $('#fStock').checked=S.stock;$('#fDisc').checked=S.disc;
+  rMin.value=S.pmin;rMax.value=S.pmax;paintPrice()}
+/* o.item = یک زیرمجموعه (مثل «شمع»)، o.group = یک گروه منو، o.list = special|best|new، o.pid = یک کالا، o.sub+o.terms = عنوان و عبارت‌های دلخواه */
+function setCat(id,o={}){
+  S.list=FL[o.list]?o.list:'';
+  S.cat=S.list?'all':((id==='all'||CATS.some(c=>c.id===id))?id:'all');
+  S.sub=o.sub||'';S.terms=o.terms?[...o.terms]:[];
+  if(o.item){S.sub=o.item;S.terms=[o.item]}
+  if(o.group){const c=curCat(),g=c&&c.g.find(x=>x[0]===o.group);if(g){S.sub=g[0]==='سایر'?'سایر '+c.n:g[0];S.terms=[...g[1]]}}
+  S.pid=o.pid||0;if(S.pid)S.cat='all';
+  S.q=o.q||'';S.brands=new Set(o.brands||[]);
+  S.bt=(S.cat==='all'&&!S.list&&!S.q&&!S.pid&&o.brands&&o.brands.length===1)?o.brands[0]:'';
+  S.stock=S.disc=false;S.page=1;
+  BOUNDS=calcBounds();S.pmin=BOUNDS[0];S.pmax=BOUNDS[1];
+  rMin.min=rMax.min=BOUNDS[0];rMin.max=rMax.max=BOUNDS[1];
+  buildBrands();renderCatList();syncFilterUI();renderGrid()}
+function clearFilters(){S.brands.clear();S.stock=S.disc=false;S.q='';S.sub='';S.terms=[];S.pid=0;S.bt='';S.pmin=BOUNDS[0];S.pmax=BOUNDS[1];S.page=1;syncFilterUI();renderGrid()}
+/* لینک از صفحه اصلی: #cat=brake  |  #cat=brake&sub=شمع  |  #cat=brake&group=کلاچ  |  #list=best  |  #brand=KDK  |  #q=لنت  |  #find=5  |  #cat=brake&title=لنت ترمز&terms=لنت|دیسک */
+function fromHash(){const h=new URLSearchParams(location.hash.slice(1)),br=h.get('brand'),q=(h.get('q')||'').slice(0,60),list=h.get('list'),find=h.get('find');
+  const title=(h.get('title')||h.get('sub')||'').slice(0,60),terms=(h.get('terms')||title).split('|').map(x=>x.trim()).filter(Boolean).slice(0,10);
+  const cat=h.get('cat')||('all');
+  setCat(cat,{q,brands:BRANDS.includes(br)?[br]:[],list:FL[list]?list:'',pid:byId(find)?+find:0,
+    sub:title&&terms.length?title:'',terms:title&&terms.length?terms:[],group:h.get('group')||''})}
+
+/* ---- events ---- */
+rMin.addEventListener('input',()=>{const v=Math.min(+rMin.value,S.pmax);rMin.value=v;S.pmin=v;S.page=1;paintPrice();renderGrid()});
+rMax.addEventListener('input',()=>{const v=Math.max(+rMax.value,S.pmin);rMax.value=v;S.pmax=v;S.page=1;paintPrice();renderGrid()});
+$('#fStock').onchange=e=>{S.stock=e.target.checked;S.page=1;renderGrid()};
+$('#fDisc').onchange=e=>{S.disc=e.target.checked;S.page=1;renderGrid()};
+$('#brandUl').addEventListener('change',e=>{const i=e.target.closest('input');if(!i)return;i.checked?S.brands.add(i.value):S.brands.delete(i.value);S.page=1;renderGrid()});
+$('#brandQ').oninput=e=>{const t=norm(e.target.value).trim();$$('#brandUl li').forEach(li=>li.hidden=!!t&&!norm(li.dataset.b).includes(t))};
+$('#resetBtn').onclick=clearFilters;
+$('#filters').addEventListener('click',e=>{const h=e.target.closest('.fHead');if(!h)return;const b=h.parentElement;b.classList.toggle('closed');h.setAttribute('aria-expanded',!b.classList.contains('closed'))});
+$('#chips').onclick=e=>{const b=e.target.closest('[data-chip]');if(!b)return;const k=b.dataset.chip;
+  if(k==='all'){clearFilters();return}
+  if(k==='q')S.q='';else if(k==='pid')S.pid=0;else if(k==='stock')S.stock=false;else if(k==='disc')S.disc=false;else if(k==='price'){S.pmin=BOUNDS[0];S.pmax=BOUNDS[1]}else if(k.startsWith('b:'))S.brands.delete(k.slice(2));
+  S.page=1;syncFilterUI();renderGrid()};
+$('#grid').addEventListener('click',e=>{if(e.target.closest('[data-chip="all"]'))clearFilters()});
+
+function setSort(k){S.sort=k;S.page=1;renderSort();renderGrid()}
+$('#sortBtn').onclick=()=>$('#sortSel').classList.toggle('open');
+const closeSort=()=>{$('#sortSheet').classList.remove('active');$('#bb').classList.remove('on')};
+const openF=()=>{$('#side').classList.add('active');$('#bb').classList.add('on');$('#closeF').focus()};
+const closeF=()=>{$('#side').classList.remove('active');$('#bb').classList.remove('on')};
+const closeAll=()=>{closeDrill();closeF();closeSort()};
+$('#mFilter').onclick=openF;$('#closeF').onclick=closeF;$('#applyBtn').onclick=closeF;
+$('#mSort').onclick=()=>{$('#sortSheet').classList.add('active');$('#bb').classList.add('on')};
+$('#sortX').onclick=closeSort;$('#sortX').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')closeSort()});
+$('#bb').onclick=closeAll;
+addEventListener('keydown',e=>{if(e.key==='Escape')closeAll()});
+
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#sortSel'))$('#sortSel').classList.remove('open');
+  const go=e.target.closest('[data-go]');
+  if(go){e.preventDefault();closeAll();closeMega();setCat(go.dataset.go);toTop();return}
+  const ls=e.target.closest('[data-list]');if(ls){e.preventDefault();closeAll();setCat('all',{list:ls.dataset.list});toTop();return}
+  const sb=e.target.closest('[data-sub]');if(sb){e.preventDefault();S.sub=sb.dataset.sub;S.terms=S.sub?[S.sub]:[];S.page=1;renderGrid();return}
+  const pg=e.target.closest('[data-pg]');if(pg&&!pg.disabled){S.page=+pg.dataset.pg;renderGrid();toTop();return}
+  const so=e.target.closest('[data-sort]');if(so){setSort(so.dataset.sort);closeSort();$('#sortSel').classList.remove('open');}
+});
+
+
+/* ---- about ---- */
+$('#aboutBtn').onclick=function(){const b=$('#aboutBox');b.classList.toggle('show');this.textContent=b.classList.contains('show')?'بستن':'مشاهده بیشتر'};
+
+/* لینک‌های منو، فوتر و جستجو فقط hash را عوض می‌کنند؛ همین‌جا خوانده می‌شود */
+renderSort();fromHash();
+addEventListener('hashchange',()=>{closeAll();closeMega();fromHash();toTop()});
+paintIcons();syncBadges();
+
+{% endverbatim %}{% endblock %}

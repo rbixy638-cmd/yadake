@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{% if p %}{{ p.title }}{% else %}{{ fallback_title }}{% endif %} | {{ site.site_name }}{% endblock %}
+{% block page %}{{ pagekey }}{% endblock %}
+{% block body %}
+<main><div class="all pageWrap">
+  <nav class="breadcrumbsGlobal"><a href="/">خانه</a><i data-i="left"></i><span aria-current="page">{% if p %}{{ p.title }}{% else %}{{ fallback_title }}{% endif %}</span></nav>
+  <h1 class="pgTitle">{% if p %}{{ p.title }}{% else %}{{ fallback_title }}{% endif %}</h1>
+  <div class="prose">{{ html }}
+    <p style="margin-top:18px"><a class="btnGlobal" href="/login/" style="display:inline-flex">ورود | عضویت</a> <a class="btnGlobal transparent borderGray" href="/contact/" style="display:inline-flex">تماس با ما</a></p>
+  </div>
+</div></main>
+{% endblock %}
+{% block script %}paintIcons();{% endblock %}

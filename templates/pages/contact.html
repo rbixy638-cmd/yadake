@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}تماس با ما | {{ site.site_name }}{% endblock %}
+{% block page %}contact{% endblock %}
+{% block body %}
+<main><div class="all pageWrap">
+  <nav class="breadcrumbsGlobal"><a href="/">خانه</a><i data-i="left"></i><span aria-current="page">تماس با ما</span></nav>
+  <h1 class="pgTitle">تماس با ما</h1>
+  <div class="contactGrid">
+    <div class="card"><div class="secTitle">اطلاعات تماس</div><ul class="cInfo">
+      <li><i data-i="call" style="display:flex"></i><div><b>تلفن</b><br><a href="tel:{{ site.phone }}">{{ site.phone }}</a></div></li>
+      <li><i data-i="mail" style="display:flex"></i><div><b>ایمیل</b><br>{{ site.email }}</div></li>
+      <li><i data-i="location" style="display:flex"></i><div><b>آدرس</b><br>{{ site.address }}</div></li>
+      <li><i data-i="clock" style="display:flex"></i><div><b>ساعت کاری</b><br>{{ site.work_hours }}</div></li></ul></div>
+    <div class="card"><div class="secTitle">پیام یا درخواست پیش‌فاکتور</div>
+      <div class="field" id="fN"><label for="cn">نام<b>*</b></label><input id="cn" maxlength="60"><span class="ferr">نام را وارد کنید.</span></div>
+      <div class="field" id="fP"><label for="cp">شمارهٔ تماس<b>*</b></label><input id="cp" class="ltr" inputmode="numeric" maxlength="14"><span class="ferr">شمارهٔ تماس را درست وارد کنید.</span></div>
+      <div class="field" id="fM"><label for="cm">پیام (نام قطعه، کد فنی یا مدل خودرو)<b>*</b></label><textarea id="cm" rows="4" maxlength="800"></textarea><span class="ferr">پیام را بنویسید.</span></div>
+      <button class="btnGlobal full" id="sendMsg">ارسال</button></div>
+  </div>
+</div></main>
+{% endblock %}
+{% block script %}{% verbatim %}
+if(ME){$('#cn').value=((ME.first||'')+' '+(ME.last||'')).trim();$('#cp').value=ME.phone||''}
+$('#sendMsg').onclick=async()=>{const n=$('#cn').value.trim(),p=toEn($('#cp').value).replace(/\D/g,''),m=$('#cm').value.trim();
+  const e=[n.length<2,!/^0\d{9,10}$/.test(p),m.length<3];['fN','fP','fM'].forEach((id,i)=>$('#'+id).classList.toggle('bad',e[i]));
+  if(e.some(Boolean))return;
+  try{await api('/api/contact/',{name:n,phone:p,message:m});$('#cm').value='';toast('پیام شما ثبت شد؛ همکاران ما تماس می‌گیرند')}catch(err){toast(err.message)}};
+paintIcons();
+{% endverbatim %}{% endblock %}

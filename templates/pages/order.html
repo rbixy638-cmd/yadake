@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}جزئیات سفارش | {{ site.site_name }}{% endblock %}
+{% block desc %}جزئیات سفارش{% endblock %}
+{% block page %}order{% endblock %}
+{% block body %}
+<main><div class="all pageWrap"><nav class="breadcrumbsGlobal" id="crumbs" aria-label="مسیر صفحه"></nav><div id="ordRoot"></div></div></main>
+{% endblock %}
+{% block script %}{% verbatim %}
+
+if(requireAuth()){
+ const root=$('#ordRoot');
+ $('#crumbs').innerHTML='<a href="/">خانه</a><i data-i="left"></i><a href="/account/#orders">سفارش‌های من</a><i data-i="left"></i><span aria-current="page">جزئیات سفارش</span>';
+ const draw=o=>{
+  const st=STATUS[o.status]||[o.statusLabel,'#555'],at=FLOW.indexOf(o.status);
+  document.title='سفارش '+o.number+' | '+SITE.name;
+  let msg='';
+  if(qs('new'))msg+='<div class="alert ok"><i data-i="check"></i><span>سفارش شما ثبت شد و در انتظار بررسی و تأیید مدیر است. پس از «مجاز» شدن، همین‌جا دکمهٔ پرداخت آنلاین فعال می‌شود.</span></div>';
+  if(qs('pay')==='failed')msg+='<div class="alert err"><i data-i="warn"></i><span>پرداخت انجام نشد. اگر مبلغی کسر شده، تا ۷۲ ساعت به حساب شما برمی‌گردد. می‌توانید دوباره تلاش کنید.</span></div>';
+  if(o.status==='blocked')msg+=`<div class="alert err"><i data-i="warn"></i><span>این سفارش توسط مدیر مسدود شد.${o.publicNote?' دلیل: '+esc(o.publicNote):''} برای اطلاعات بیشتر تماس بگیرید: <a href="${telHref()}">${toFa(SITE.phone)}</a></span></div>`;
+  if(o.status==='cancelled')msg+='<div class="alert err"><i data-i="warn"></i><span>این سفارش لغو شده است.</span></div>';
+  if(o.status==='pending')msg+='<div class="alert warn"><i data-i="clock"></i><span>در انتظار تأیید مدیر. این صفحه را بعداً دوباره باز کنید.</span></div>';
+  let pay='';
+  if(o.canPay)pay=`<div class="payBox"><b>سفارش شما مجاز شد.</b><div style="font-size:.78em;margin-top:4px">مبلغ قابل پرداخت: <b>${fa(o.total)} تومان</b> — پرداخت فقط آنلاین از طریق درگاه بانکی است.</div><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px"><button class="btnGlobal" id="payBtn" style="margin-top:0">پرداخت آنلاین</button></div></div>`;
+  if(o.invoice)pay=`<div class="paidOk"><div><b>✔ پرداخت با موفقیت انجام شد</b><div style="font-size:.78em;margin-top:2px">سفارش شما برای جمع‌آوری به انبار رفت.</div></div><a class="pdfBtn" href="${o.invoice}" target="_blank" rel="noopener">${pdfBadge()}دریافت فاکتور PDF</a></div>`;
+  root.innerHTML=`${msg}${pay}
+  <h1 class="pgTitle">سفارش ${esc(o.number)} <span class="chip" style="color:${st[1]}">${esc(st[0])}</span></h1>
+  <div class="card" style="margin-bottom:18px"><div class="tl">${FLOW.map((f,i)=>`<div class="s${i<=at?' on':''}"><i>${ico('check')}</i>${FLOW_LABELS[i]}</div>`).join('')}</div>
+   <div class="infoGrid"><div class="infoRow"><span>تاریخ ثبت</span><b>${fdate(o.date)}</b></div><div class="infoRow"><span>روش ارسال</span><b>${esc(o.ship)||'-'}</b></div>
+   <div class="infoRow"><span>روش پرداخت</span><b>آنلاین</b></div><div class="infoRow"><span>گیرنده</span><b>${esc(o.name)}</b></div>
+   <div class="infoRow wide"><span>آدرس</span><b>${esc(o.address)}</b></div>${o.note?`<div class="infoRow wide"><span>توضیحات</span><b>${esc(o.note)}</b></div>`:''}</div></div>
+  <div class="card"><div class="secTitle">اقلام سفارش</div><div style="overflow:auto"><table class="tbl"><thead><tr><th></th><th>کالا</th><th>کد فنی</th><th>تعداد</th><th>قیمت واحد</th><th>جمع</th></tr></thead><tbody>
+   ${o.items.map(i=>`<tr><td style="width:56px"><span style="display:block;width:46px;height:46px">${picI(i)}</span></td><td>${i.id?`<a href="/product/?id=${i.id}">${esc(i.name)}</a>`:esc(i.name)}</td><td>${esc(i.model)}</td><td>${fa(i.q)}</td><td>${fa(i.unit)}</td><td>${fa(i.unit*i.q)}</td></tr>`).join('')}</tbody></table></div>
+   <div class="sumRow tot"><span>جمع کل (تومان)</span><b>${fa(o.total)}</b></div></div>
+  <div style="margin-top:18px"><a class="btnGlobal" href="/account/#orders">بازگشت به سفارش‌ها</a></div>`;
+  paintIcons();
+  const pb=$('#payBtn');if(pb)pb.onclick=async()=>{pb.disabled=true;pb.textContent='در حال انتقال به درگاه...';try{const r=await api('/api/pay/start/',{number:o.number});location.href=r.url}catch(e){toast(e.message);pb.disabled=false;pb.textContent='پرداخت آنلاین'}};
+ };
+ (async()=>{try{const r=await api('/api/order/'+encodeURIComponent(qs('id')||'')+'/');draw(r.order)}
+  catch(e){root.innerHTML='<div class="card nf"><b>؟</b><p>'+esc(e.message)+'</p><a class="btnGlobal" href="/account/#orders">سفارش‌های من</a></div>'}})();
+}
+
+{% endverbatim %}{% endblock %}

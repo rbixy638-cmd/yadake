@@ -1,0 +1,7 @@
+{% if page.paginator.num_pages > 1 %}
+<div class="pager noprint">
+  {% if page.has_previous %}<a href="?{{ qstring }}&page={{ page.previous_page_number }}">‹ قبلی</a>{% endif %}
+  <span>صفحه {{ page.number }} از {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}<a href="?{{ qstring }}&page={{ page.next_page_number }}">بعدی ›</a>{% endif %}
+</div>
+{% endif %}

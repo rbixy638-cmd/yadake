@@ -1,0 +1,24 @@
+<form class="filters noprint" method="get">
+  <input type="hidden" name="tab" value="{{ tab }}">
+  <input type="text" class="fq" name="q" value="{{ f.q }}" placeholder="جستجو: شماره سفارش، نام، موبایل، نام کالا یا کد فنی">
+  <select name="range" aria-label="تاریخ">
+    <option value="">همهٔ تاریخ‌ها</option>
+    <option value="today" {% if f.range == 'today' %}selected{% endif %}>امروز</option>
+    <option value="7" {% if f.range == '7' %}selected{% endif %}>۷ روز اخیر</option>
+    <option value="30" {% if f.range == '30' %}selected{% endif %}>۳۰ روز اخیر</option>
+  </select>
+  <select name="sort" aria-label="ترتیب">
+    <option value="new" {% if sort == 'new' %}selected{% endif %}>جدیدترین اول</option>
+    <option value="old" {% if sort == 'old' %}selected{% endif %}>قدیمی‌ترین اول</option>
+  </select>
+  {% if ships %}
+  <select name="ship" aria-label="روش ارسال">
+    <option value="">همهٔ روش‌های ارسال</option>
+    {% for s in ships %}<option value="{{ s }}" {% if f.ship == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+  </select>
+  {% endif %}
+  {% if worker and tab == 'done' %}<label><input type="checkbox" name="mine" value="1" {% if f.mine == '1' %}checked{% endif %}> فقط جمع‌شده‌های من</label>{% endif %}
+  <button type="submit">اعمال</button>
+  <a href="?tab={{ tab }}">پاک کردن</a>
+</form>
+<div class="found noprint">{{ total_found }} سفارش پیدا شد.</div>

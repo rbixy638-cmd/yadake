@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}کالا | {{ site.site_name }}{% endblock %}
+{% block desc %}مشخصات و قیمت عمده کالا{% endblock %}
+{% block page %}product{% endblock %}
+{% block body %}
+<main><div class="all pageWrap"><nav class="breadcrumbsGlobal" id="crumbs" aria-label="مسیر صفحه"></nav><div id="pdpRoot"></div></div></main>
+{% endblock %}
+{% block script %}{% verbatim %}
+
+const p=byId(qs('id')),root=$('#pdpRoot');
+if(!p){
+  $('#crumbs').innerHTML='<a href="/">خانه</a><i data-i="left"></i><span aria-current="page">کالا پیدا نشد</span>';
+  root.innerHTML='<div class="card nf"><b>؟</b><p>این کالا پیدا نشد یا حذف شده است.</p><a class="btnGlobal" href="/category/#cat=all">مشاهده همهٔ محصولات</a></div>';
+}else{
+  const c=CATS.find(x=>x.id===p.cat),out=p.stock<1,lo=Math.min(p.min,p.stock),imgs=p.images||[];let q=lo,gi=0;
+  document.title=p.name+' | '+SITE.name;
+  $('#crumbs').innerHTML=`<a href="/">خانه</a><i data-i="left"></i><a href="${catHref({cat:c.id})}">${esc(c.n)}</a><i data-i="left"></i><span aria-current="page">${esc(p.name)}</span>`;
+  const descP=(p.desc||'').split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean);
+  root.innerHTML=`<div class="pdp">
+   <div class="pdpGal"><div class="pdpImg" id="pdpMain" role="button" tabindex="0" aria-label="بزرگ‌نمایی تصویر"><span class="model">${esc(p.model)}</span>${imgs.length?`<img id="mainImg" src="${imgs[0]}" alt="${esc(p.name)}" draggable="false">`:svg(p.icon)}<span class="zoomHint">${ico('zoom')}</span></div>
+    ${imgs.length>1?`<div class="thumbs" id="thumbs">${imgs.map((s,i)=>`<button type="button" data-n="${i}" class="${i?'':'on'}" aria-label="تصویر ${fa(i+1)}"><img src="${s}" alt="" draggable="false"></button>`).join('')}</div>`:''}</div>
+   <div class="pdpInfo"><h1>${esc(p.name)}</h1>
+    <div class="pdpMeta"><span>کد فنی: ${esc(p.model)||'—'}</span>${p.brand?`<a href="${catHref({brand:p.brand})}">${BRAND_LOGOS[p.brand]?`<img src="${BRAND_LOGOS[p.brand]}" alt="" style="height:18px;vertical-align:middle;margin-left:6px;object-fit:contain">`:''}برند: ${esc(p.brand)}</a>`:''}<a href="${catHref({cat:c.id})}">${esc(c.n)}</a>${p.disc>0?`<span style="background:var(--yellowLight)">تخفیف عمده ${fa(p.disc)}٪</span>`:''}</div>
+    <div class="buyBox">
+     <small style="color:var(--grayIcon);font-size:.72em">قیمت عمده (هر عدد)</small>
+     <div class="bigPrice">${fa(wprice(p))}<small>تومان</small></div>
+     ${out?'<div class="stockNo">ناموجود</div>':'<div class="stockOk">موجود</div>'}
+     <div class="sumRow"><span>حداقل سفارش عمده</span><b>${fa(p.min)} ${esc(p.unit||'عدد')}</b></div>
+     ${out?'':`<div class="buyRow"><div class="stepper"><button id="qm" aria-label="کم کردن">−</button><b id="qv"></b><button id="qp" aria-label="زیاد کردن">+</button></div><button class="btnGlobal" id="addBtn">افزودن به سبد خرید</button></div>
+     <div class="sumRow tot"><span>جمع</span><b id="lineTot"></b></div>`}
+     <div id="authNote" style="margin-top:14px"></div>
+    </div></div></div>
+   <div class="tabsH" id="tabsH"><button class="on" data-t="d">توضیحات</button><button data-t="s">مشخصات</button><button data-t="r">ارسال و بازگشت</button></div>
+   <div class="tabP on" data-p="d">${descP.length?descP.map(x=>`<p>${esc(x)}</p>`).join(''):`<p>${esc(p.name)}${p.brand?' از برند '+esc(p.brand):''} با کد فنی ${esc(p.model)||'—'} در دستهٔ «${esc(c.n)}» عرضه می‌شود. این کالا با قیمت عمده فروخته می‌شود و حداقل تعداد سفارش ${fa(p.min)} عدد است.</p>`}<p>برای اطمینان از سازگاری با مدل و سال ساخت خودرو، پیش از سفارش کد فنی را با کارشناسان بررسی کنید؛ از بخش <a href="/contact/" style="text-decoration:underline">تماس با ما</a> می‌توانید مدل خودرو را بفرستید.</p></div>
+   <div class="tabP" data-p="s"><table class="tbl"><tbody>
+     <tr><th>نام کالا</th><td>${esc(p.name)}</td></tr><tr><th>کد فنی</th><td>${esc(p.model)||'—'}</td></tr><tr><th>برند</th><td>${esc(p.brand)||'—'}</td></tr><tr><th>دسته‌بندی</th><td>${esc(c.n)}</td></tr>
+     <tr><th>حداقل سفارش عمده</th><td>${fa(p.min)} ${esc(p.unit||'عدد')}</td></tr><tr><th>وضعیت</th><td>${out?'ناموجود':'موجود'}</td></tr></tbody></table></div>
+   <div class="tabP" data-p="r"><p>سفارش‌ها با باربری، تیپاکس و پیک ارسال می‌شوند و هزینهٔ ارسال به‌صورت پس‌کرایه محاسبه می‌شود. جزئیات در صفحهٔ <a href="/guide/#shipping" style="text-decoration:underline">راهنمای ارسال</a> و <a href="/guide/#returns" style="text-decoration:underline">شرایط بازگشت کالا</a> آمده است.</p></div>`;
+  /* گالری و نمایش بزرگ */
+  const gal=imgs.length?imgs.map(src=>({src})):[{html:svg(p.icon)}];
+  const main=$('#pdpMain');main.onclick=()=>openLightbox(gal,gi);
+  main.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openLightbox(gal,gi)}});
+  const th=$('#thumbs');if(th)th.onclick=e=>{const b=e.target.closest('[data-n]');if(!b)return;gi=+b.dataset.n;$('#mainImg').src=imgs[gi];$$('#thumbs button').forEach(x=>x.classList.toggle('on',x===b))};
+  $('#tabsH').onclick=e=>{const b=e.target.closest('[data-t]');if(!b)return;$$('#tabsH button').forEach(x=>x.classList.toggle('on',x===b));$$('.tabP').forEach(x=>x.classList.toggle('on',x.dataset.p===b.dataset.t))};
+  /* پیام وضعیت کاربر */
+  const u=ME,note=$('#authNote');
+  if(!u)note.innerHTML=`<div class="alert info"><i data-i="info"></i><span>برای ثبت سفارش باید وارد حساب شوید. <a href="/login/?next=${encodeURIComponent(curPage())}">ورود | عضویت</a></span></div>`;
+  else if(u.complete&&u.blocked)note.innerHTML='<div class="alert err"><i data-i="warn"></i><span>حساب شما مسدود است و امکان خرید ندارید.</span></div>';
+  else if(u.complete&&AUTH.debt(u)>0)note.innerHTML='<div class="alert err"><i data-i="warn"></i><span>به دلیل بدهی معوق در حساب شما، تا تسویه امکان خرید ندارید.</span></div>';
+  if(!out){
+    const paint=()=>{$('#qv').textContent=fa(q);$('#lineTot').textContent=fa(wprice(p)*q)+' تومان'};paint();
+    $('#qm').onclick=()=>{if(q-1<lo){toast('حداقل تعداد عمده '+fa(p.min)+' عدد است');return}q--;paint()};
+    $('#qp').onclick=()=>{if(q+1>p.stock){toast('بیشتر از موجودی انبار نمی‌شود');return}q++;paint()};
+    $('#addBtn').onclick=()=>addCart(p.id,'w',q);
+  }
+  let sim=PRODUCTS.filter(x=>x.id!==p.id&&x.cat===p.cat);
+  sim=sim.concat(PRODUCTS.filter(x=>x.id!==p.id&&x.brand&&x.brand===p.brand&&!sim.includes(x))).slice(0,10);
+  if(sim.length){root.insertAdjacentHTML('beforeend',`<div class="tabProducts whiteBg radius16 mt48"><div class="flex jb ac"><div class="boxTitleGlobal">کالاهای مشابه</div></div><div class="arrows"><div class="swBtn p" data-sc="simBox" data-d="1" data-i="right"></div><div class="swBtn n" data-sc="simBox" data-d="-1" data-i="left"></div></div><div class="tabBox"><ul class="productBox" id="simBox"></ul></div></div>`);mount($('#simBox'),sim)}
+}
+paintIcons();syncBadges();
+
+{% endverbatim %}{% endblock %}
